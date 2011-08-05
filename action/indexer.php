@@ -68,7 +68,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
                 // remove any display syntax
                 $match = strtok($match, '|');
                 // add index number if missing
-                if (preg_match('`^\d+//.+`', $match) == 0) $match = "0/" . $match;
+                if (preg_match('`^\d+\/.+`', $match) == 0) $match = "0/" . $match;
                 // compare the current page's entries with the delete list
                 $exists = preg_grep('`^' . $match . '`', $page_entry_idx);
                 if ( ! empty($exists)) {
