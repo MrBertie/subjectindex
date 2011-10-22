@@ -67,7 +67,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             foreach ($matches as $match) {
                 // remove any display syntax
                 $match = strtok($match, '|');
-                // add index number if missing
+                // add index number if missing (an index no. should match: <digits>/<text>...
                 if (preg_match('`^\d+\/.+`', $match) == 0) $match = "0/" . $match;
                 // compare the current page's entries with the delete list
                 $exists = preg_grep('`^' . $match . '`', $page_entry_idx);
@@ -88,7 +88,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             $updated = true;
         }
         if ($updated) {
-            // sort and commit all updates
+            // sort then commit all updates
             usort($entry_idx, array($this, '_pathcmp'));
             file_put_contents($index_file, $entry_idx);
         }
@@ -112,7 +112,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         return strnatcasecmp($a, $b);
     }
     /**
-     * Returns position key instead of string
+     * Returns position key instead of string key
      *
      * @param array $a
      * @param <type> $pos

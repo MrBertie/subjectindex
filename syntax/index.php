@@ -73,7 +73,12 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     }
                     break;
                 case 'cols':
-                    $opt['cols'] = ($value > 12) ? 12 : $value;
+                    if ($value < 1) {
+                        $value = 1;
+                    } elseif ($value > 12) {
+                        $value = 12;
+                    }
+                    $opt['cols'] = $value;
                     break;
                 case 'index':
                     $index_max = count(explode(';', $this->getConf('subjectindex_index_pages')));

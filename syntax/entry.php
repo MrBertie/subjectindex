@@ -41,7 +41,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
         // Syntax: {{entry>[idx no./heading/]entry text[|display name]}}    [..] optional
 		$pattern = SUBJ_IDX_ENTRY_RGX;
 		$this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
-        // Syntax: #tag# -or- #tag_name# (no spaces)
+        // Syntax: #tag# (any chars accepted between the # symbols)
         $pattern = SUBJ_IDX_TAG_RGX;
         $this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
 	}
@@ -57,7 +57,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
             $end = strpos($match, '>');
             $data = substr($match, $end + 1, -2); // remove {{entry>...}} markup
             list($entry, $display) = explode('|', $data);
-            if (preg_match('`^\d+//.+`', $match) > 0) {
+            if (preg_match('`^\d+\/.+`', $entry) > 0) {
                 // first digit refers to the index page
                 list($index, $entry) = explode('/', $entry, 2);
             } else {
@@ -86,6 +86,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
         } elseif (preg_match('/^([1-9])(,([1-9]))?$/', $display, $matches) > 0) {
             $start = $matches[1] - 1;
             $len = (count($matches) > 2) ? $matches[4] : 1;
+            $levels = explode('/', $entry);
             $display = implode($sep, array_slice($levels, $start, $len));
         }
 
@@ -100,7 +101,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
         if ($mode == 'xhtml') {
             $hidden = ($hide) ? ' hidden' : '';
             $entry = ($is_tag) ? $this->getLang('subjectindex_tag') . $entry : $this->getLang('subjectindex_prefix') . $entry;
-			$renderer->doc .= '<a id="' . $link_id . ' " class="entry' . $hidden .
+			$renderer->doc .= '<a id="' . $link_id . '" class="entry' . $hidden .
                               '" title="' . $this->html_encode($entry) .
                               '" href="' . wl($index_page) . '#' . $link_id . '">' .
                               $this->html_encode($display) . '</a>' . DOKU_LF;
