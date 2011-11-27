@@ -20,7 +20,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
 
     function _subject_index(&$event, $param) {
         if (isset($event->data['page'])) {
-            $page = $event->data['page']; // param names changed in rincewind release
+            $page = $event->data['page']; // param names changed in Rincewind release
         } else {
             $page = $event->data[0];    // pre-Rincewind params
         }
@@ -44,7 +44,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         $page_entry_idx = preg_grep('`.*\|' . $pid . '$`', $entry_idx);
         unset($page_idx);
 
-        // now get all subjectindex entries for this wiki page
+        // now get all marked up entries for this wiki page
         $wiki = rawWiki($page);
         $match_cnt = preg_match_all('`' . SUBJ_IDX_INDEXER_RGX. '`', $wiki, $entry_matches);
         if ($match_cnt > 0) {
@@ -52,12 +52,12 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             $matched = true;
         }
         // then deal with special tag matches
-        $tag_idx = $this->getConf('subjectindex_tag_idx');
-        if ( ! empty($tag_idx)) {
-            $match_cnt = preg_match_all('/' . SUBJ_IDX_TAG_RGX . '/', $wiki, $tag_matches);
+        $tag_section = $this->getConf('subjectindex_tag_section');
+        if ( ! empty($tag_section)) {
+            $match_cnt = preg_match_all('/(' . SUBJ_IDX_TAG_RGX . ')/', $wiki, $tag_matches);
             if ($match_cnt > 0) {
                 foreach ($tag_matches[0] as $tag) {
-                    $matches[] = $tag_idx . "/" . substr($tag, 1, -1);
+                    $matches[] = $tag_section . "/" . utf8_trim($tag, '#');
                 }
                 $matched = true;
             }
@@ -67,7 +67,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             foreach ($matches as $match) {
                 // remove any display syntax
                 $match = strtok($match, '|');
-                // add index number if missing (an index no. should match: <digits>/<text>...
+                // add section number if missing (a section no. should match: <digit>/<text>...
                 if (preg_match('`^\d+\/.+`', $match) == 0) $match = "0/" . $match;
                 // compare the current page's entries with the delete list
                 $exists = preg_grep('`^' . $match . '`', $page_entry_idx);
@@ -138,7 +138,6 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
                 unset($entry_idx[$idx]);
             }
         }
-        //return $entry_idx;
     }
     /**
      * Returns true if a day has passed since last cleanup

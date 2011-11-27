@@ -3,14 +3,17 @@
 if(!defined('DOKU_INC')) die();
 
 define('SUBJ_IDX_CHECK_TIME', DOKU_PLUGIN . 'subjectindex/conf/last_cleanup');
+define('SUBJ_IDX_DEFAULT_TARGETS', DOKU_PLUGIN . 'subjectindex/conf/default_targets');
 
 define('SUBJ_IDX_INDEX_NAME', 'subject');
 define('SUBJ_IDX_DEFAULT_DIR', DOKU_INC . 'data/index/');
 define('SUBJ_IDX_DEFAULT_PAGE', ':subjectindex');
 
-define('SUBJ_IDX_TAG_RGX', '(?<=\s|^)#.+?#');
+define('SUBJ_IDX_TAG_RGX', '(?<=\s|^)#[^0-9\s]+');
 define('SUBJ_IDX_ENTRY_RGX', '\{\{entry>.+?\}\}');
 define('SUBJ_IDX_INDEXER_RGX', '\{\{entry>(.+?)\}\}');
+
+define('SUBJ_IDX_SECTION_MAX', 9);
 
 /**
  * Returns the subject index file name
@@ -32,23 +35,29 @@ function get_subj_index($data_dir) {
     return $index_file;
 }
 /**
- * Gets the correct subject index wiki page name based on an index number
- * Defaults to first in list, or ':subjectindex' if missing
- *
- * @param string $index_pages list of wiki index pages delimited by ';'
- * @param integer $index which page are you looking for
- * @return string page name
+ * Gets the correct target wiki page name based on a (section) number
+ * Returns an empty string if missing
  */
-function get_index_page($index_pages, $index = 0) {
-    $pages = explode(";", $index_pages);
-    if (isset($pages[$index])) {
-        $page = $pages[$index];
-    } elseif ( ! empty($pages[0])) {
-        $page = $pages[0];
+function get_target_page($section = 0) {
+    $pages = unserialize(file_get_contents(SUBJ_IDX_DEFAULT_TARGETS));
+    if ($pages !== false && isset($pages[$section])) {
+        return $pages[$section];
     } else {
-        $page = SUBJ_IDX_DEFAULT_PAGE;
+        return '';
     }
-    return $page;
+}
+/**
+ * Adds/Updates a target page for entry links
+ */
+function set_target_page($page, $section = 0) {
+    // create if missing
+    if ( ! is_file(SUBJ_IDX_DEFAULT_TARGETS)) {
+        $pages = array();
+    } else {
+        $pages = unserialize(file_get_contents(SUBJ_IDX_DEFAULT_TARGETS));
+    }
+    $pages[$section] = $page;
+    file_put_contents(SUBJ_IDX_DEFAULT_TARGETS, serialize($pages));
 }
 /**
  * Removes invalid chars from any string to make it suitable for use as a HTML id attribute

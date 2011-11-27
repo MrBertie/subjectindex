@@ -33,6 +33,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 	}
 
 	function handle($match, $state, $pos, &$handler) {
+        global $ID;
 
 		$match = substr($match, 15, -2); // strip "{{subjectindex>...}}" markup
 
@@ -41,12 +42,13 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         // defaults
         $opt['abstract'] = true;       // show abstract of page content
         $opt['border'] = 'none';       // show borders around table columns
-        $opt['cols'] = 1;              // number of columns in subject index (max=6)
-        $opt['index'] = 0;             // which index page to use and display (0-9)...hopefully 10 is enough
+        $opt['cols'] = 1;              // number of columns in a SubjectIndex display page (max=6)
+        $opt['section'] = 0;           // which section to use and display (0-9)...hopefully 10 is enough
         $opt['proper'] = false;        // use proper-case for page names
         $opt['title'] = false;         // use title instead of name
         $opt['noAtoZ'] = false;        // turn off the A,B,C main headings
-        $opt['showorder'] = false;     // display any bullet numbers (used to manually order list items)
+        $opt['showorder'] = false;     // display any bullet numbers used for ordering
+        $opt['default'] = false;       // whether this display index page is the default for this index section number
 
 		$args = explode(';', $match);
         foreach ($args as $arg) {
@@ -58,6 +60,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                 case 'noAtoZ':
                 case 'noatoz':
                 case 'showorder':
+                case 'default':
                     $opt[$key] = true;
                     break;
                 case 'border':
@@ -80,12 +83,15 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     }
                     $opt['cols'] = $value;
                     break;
-                case 'index':
-                    $index_max = count(explode(';', $this->getConf('subjectindex_index_pages')));
-                    $opt['index'] = ($value < $index_max && $value < 10) ? $value : 0;
+                case 'section':
+                    $opt['section'] = ($value <= SUBJ_IDX_SECTION_MAX) ? $value : 0;
                     break;
                 default:
             }
+        }
+        // update the list of default target pages for entry links
+        if ($opt['default'] === true) {
+            set_target_page($ID, $opt['section']);
         }
 		return $opt;
 	}
@@ -103,21 +109,20 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             require_once (DOKU_INC . 'inc/indexer.php');
             $page_idx = idx_getIndex('page', '');
 
-            list($lines, $heights) = $this->_create_index($opt['index'], $subject_idx, $page_idx, $opt['noAtoZ']);
+            list($lines, $heights) = $this->_create_index($opt['section'], $subject_idx, $page_idx, $opt['noAtoZ'], $opt['proper']);
             $renderer->doc .= $this->_render_index($lines, $heights, $opt);
         } else {
             return false;
         }
     }
 
-    private function _create_index($index, $subject_idx, $page_idx, $noAtoZ) {
-        // grab only items for chosen subject index number
-        $subject_idx = preg_grep('/^' . $index . '.+/', $subject_idx);
+    private function _create_index($section, $subject_idx, $page_idx, $noAtoZ, $proper) {
+        // grab only items for chosen index section
+        $subject_idx = preg_grep('/^' . $section . '.+/', $subject_idx);
 
         // ratio of different heading heights (%), to ensure more even use of columns (h1 -> h6)
         $ratios = array(1.3, 1.17, 1.1, 1.03, .96, .90);
 
-        $prev_entry = array();
         $lines = array();
         $heights = array();
         $links = array();
@@ -185,6 +190,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
     }
 
     private function _render_index($lines, $heights, $opt) {
+
         // try to get a realistic column height, based on all headers
         $col_height = array_sum($heights) / $opt['cols'];
         $height = current($heights);
@@ -258,7 +264,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
     private function _split_entry($entry) {
         list($text, $pid) = explode('|', $entry);
-        // remove the index page number
+        // remove the index section number
         list($_, $text) = explode('/', $text, 2);
         return array($text, $pid);
     }

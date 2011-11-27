@@ -1,10 +1,15 @@
-div.dokuwiki a.entry {
+div.dokuwiki a.entry,
+div.dokuwiki a.bad-entry {
     font-size:80%;
     padding:1px 3px 3px 14px;
     margin:0 3px 0 0;
     display:inline;
     vertical-align:top;
     background: transparent url(images/star-blue.png) 0px 0px no-repeat;
+}
+
+div.dokuwiki a.bad-entry {
+    background: transparent url(images/star-grey.png) 0px 0px no-repeat;
 }
 
 div.dokuwiki a.entry:hover {
@@ -15,13 +20,17 @@ div.dokuwiki a.entry:hover {
 }
 
 div.dokuwiki div#subjectindex {
+    padding:4px;
     font-size:80%;
     text-align:left;
-    border:1px;
+    -moz-border-radius:8px;
+    -webkit-border-radius:8px;
+    border-radius: 8px;
     position:relative;
 }
 div.dokuwiki div#subjectindex,
 div.dokuwiki div#subjectindex td {
+    border-width:1px;
 	border-style:solid;
 	border-color:#D7D5D4;
 }
@@ -64,6 +73,7 @@ div.dokuwiki div#subjectindex h1 {
     background:#EDEDED;
     -moz-border-radius:6px;
     -webkit-border-radius:6px;
+    border-radius: 6px;
 }
 div.dokuwiki div#subjectindex h2 {font-size:117%; font-weight:bold;}
 div.dokuwiki div#subjectindex h3 {font-size:110%;}
@@ -104,14 +114,14 @@ div.dokuwiki div#subjectindex span.frequency {
     display:inline;
     font-weight:normal;
     color:#B2B2B2;
-    margin-left:2px;
+    margin-left:3px;
     vertical-align:top;
-    font-size:70%;
+    font-size:80%;
     line-height:130%;
 }
 div.dokuwiki div#subjectindex a.top {
     position:absolute;
-    bottom:0.4em;;
+    bottom:-1.5em;
     right:0.5em;
     font-style:italic;
     color:#A0A0A0;

@@ -3,7 +3,7 @@
  * Subject Index plugin : entry syntax
  * indexes any subject index entries on the page (to data/index/subject.idx by default)
  *
- * Using the ::[heading/sub-heading/]entry[|display text]:: syntax
+ * Using the {{entry>[heading/sub-heading/]entry[|display text]}} syntax
  * a new subject index entry can be added
  *
  * @license  GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -41,7 +41,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
         // Syntax: {{entry>[idx no./heading/]entry text[|display name]}}    [..] optional
 		$pattern = SUBJ_IDX_ENTRY_RGX;
 		$this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
-        // Syntax: #tag# (any chars accepted between the # symbols)
+        // Syntax: #tag, or #multi_word_tag (any chars accepted after the # symbols **except space**, first char cannot be 0-9!)
         $pattern = SUBJ_IDX_TAG_RGX;
         $this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
 	}
@@ -49,23 +49,23 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	function handle($match, $state, $pos, &$handler) {
         // first look for 'special' tag patterns: #tag#
         if($match[0] != '{') {
-            $entry = utf8_substr($match, 1, -1);    // remove the '#''s
-            $display = str_replace('_', ' ', $entry);
-            $index = $this->getConf('subjectindex_tag_idx'); //index page for tags only!
+            $entry = utf8_trim($match, '#');    // remove the '#''s (old syntax also had at end...)
+            $display = str_replace('_', ' ', $entry);  // swap '_' for spaces for display
+            $section = $this->getConf('subjectindex_tag_section'); //index section used for tags!
             $is_tag = true;
         } else {
             $end = strpos($match, '>');
             $data = substr($match, $end + 1, -2); // remove {{entry>...}} markup
             list($entry, $display) = explode('|', $data);
             if (preg_match('`^\d+\/.+`', $entry) > 0) {
-                // first digit refers to the index page
-                list($index, $entry) = explode('/', $entry, 2);
+                // first digit refers to the index section to be used
+                list($section, $entry) = explode('/', $entry, 2);
             } else {
-                // if missing then use default index_page, i.e. first in config list
-                $index = 0;
+                $section = 0;
             }
             $is_tag = false;
         }
+
         require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
         $link_id = clean_id($entry);
         $entry = $this->remove_ord($entry); // remove any ordered list numbers (used for manual sorting)
@@ -81,29 +81,31 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
         // no display so show star by default
         } elseif ((isset($display) && empty($display)) || $display == '*') {
             $display = str_replace('/', $sep, $entry);
-        // if display begins with n or n,n then display specific portions of the entry only
-        // FIXME: does anyone really use this feature?
-        } elseif (preg_match('/^([1-9])(,([1-9]))?$/', $display, $matches) > 0) {
-            $start = $matches[1] - 1;
-            $len = (count($matches) > 2) ? $matches[4] : 1;
-            $levels = explode('/', $entry);
-            $display = implode($sep, array_slice($levels, $start, $len));
         }
 
         $entry = str_replace('/', $sep, $entry);
-        $index_page = get_index_page($this->getConf('subjectindex_index_pages'), $index);
-		return array($entry, $display, $link_id, $index_page, $hide, $is_tag);
+        $target_page = get_target_page($section);
+		return array($entry, $display, $link_id, $target_page, $hide, $is_tag);
 	}
 
 	function render($mode, &$renderer, $data) {
-        list($entry, $display, $link_id, $index_page, $hide, $is_tag) = $data;
+        list($entry, $display, $link_id, $target_page, $hide, $is_tag) = $data;
 
         if ($mode == 'xhtml') {
             $hidden = ($hide) ? ' hidden' : '';
             $entry = ($is_tag) ? $this->getLang('subjectindex_tag') . $entry : $this->getLang('subjectindex_prefix') . $entry;
-			$renderer->doc .= '<a id="' . $link_id . '" class="entry' . $hidden .
-                              '" title="' . $this->html_encode($entry) .
-                              '" href="' . wl($index_page) . '#' . $link_id . '">' .
+            if (empty($target_page)) {
+                $title = $this->getLang('no_default_target');
+                $target_page = '';
+                $class = 'bad-entry';
+            } else {
+                $target_page = wl($target_page) . '#' . $link_id;
+                $title = $this->html_encode($entry);
+                $class = 'entry';
+            }
+			$renderer->doc .= '<a id="' . $link_id . '" class="' . $class . $hidden .
+                              '" title="' . $title .
+                              '" href="' . $target_page . '">' .
                               $this->html_encode($display) . '</a>' . DOKU_LF;
 			return true;
 		}
