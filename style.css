@@ -20,6 +20,7 @@ div.dokuwiki a.entry:hover {
 }
 
 div.dokuwiki div#subjectindex {
+    overflow: hidden;
     padding:4px;
     font-size:80%;
     text-align:left;
