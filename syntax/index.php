@@ -61,7 +61,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                 case 'noatoz':
                 case 'showorder':
                 case 'default':
-                    $opt[$key] = true;
+                    $opt[strtolower($key)] = true;
                     break;
                 case 'border':
                     switch ($value) {
