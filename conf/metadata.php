@@ -7,6 +7,5 @@
  */
 
 $meta['subjectindex_data_dir'] = array('string');
-$meta['subjectindex_tag_section'] = array('integer');
 $meta['subjectindex_display_sep'] = array('string');
 ?>

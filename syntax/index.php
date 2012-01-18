@@ -109,7 +109,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             require_once (DOKU_INC . 'inc/indexer.php');
             $page_idx = idx_getIndex('page', '');
 
-            list($lines, $heights) = $this->_create_index($opt['section'], $subject_idx, $page_idx, $opt['noAtoZ'], $opt['proper']);
+            list($lines, $heights) = $this->_create_index($opt['section'], $subject_idx, $page_idx, $opt['noatoz'], $opt['proper']);
             $renderer->doc .= $this->_render_index($lines, $heights, $opt);
         } else {
             return false;
@@ -129,10 +129,13 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
         // first build a list of valid subject entries to be rendered, plus their heights
         list($next_entry, $next_pid) = $this->_split_entry(current($subject_idx));
+        $prev_entry = '';
+
         do {
             $entry = $next_entry;
             $pid = $next_pid;
 
+            // cache the next entry for comparison purposes
             $next = next($subject_idx);
             if ($next !== false) {
                 list($next_entry, $next_pid) = $this->_split_entry($next);
@@ -144,32 +147,39 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             $page = rtrim($page_idx[intval($pid)], "\n\r");
             if ( ! valid_page($page)) continue;
 
-            // split current entry into levels
-            // a-z, header1, header2 etc...
-            $cur_levels = explode('/', $entry);
-            if ( ! $noAtoZ) {
-                $az = array(strtoupper($entry[0]));
-                $cur_levels = array_merge($az, $cur_levels); // [0] => A-Z heading
-            }
-            $max_level = count($cur_levels) - 1;   // array pos of last entry level
-            for ($i = 0; $i <= $max_level; $i++) {
-                // we can add the page link only if this is the final level
-                $is_link = ($max_level == $i);
-                $cur_level = $cur_levels[$i];
+            // note: all comparisons are caseless (this is an A-Z index after all!)
+            $next_differs = strcasecmp($entry, $next_entry) != 0;
 
-                if ($is_link) {
-                    $links[] = $page;
+            if ( ! $noAtoZ) {
+                // check for ordered entries 1
+                $matched = preg_match('/(^\d+\.)?(.).+/', $entry, $matches);
+                if ($matched > 0) {
+                    $entry = $matches[1] . strtoupper($matches[2]) . '/' . $entry; // A-Z heading
+                } else {
+                    $entry = strtoupper($entry[0]) . '/' . $entry;
                 }
-                // all comparisons are caseless (this is an A-Z index after all!)
-                $next_is_different = strcasecmp($entry, $next_entry) != 0;
+            }
+            $cur_level = strtok($entry, '/');
+            $cur_entry = '';
+            $lvl = 1;
+
+            do {
+                $next_level = strtok('/');
+                $cur_entry .= (empty($cur_entry)) ? $cur_level : '/' . $cur_level;  // current heading state
+
+                // we can add the page link only if this is the final level
+                $is_link = ($next_level === false);
+                if ($is_link) $links[] = $page;
 
                 // we only make headings that are different from the previous
-                $is_new_level = ! isset($prev_levels[$i]) || $cur_level != $prev_levels[$i];
+                $match = strpos($prev_entry, $cur_entry);
+                $is_level = ($match === false || $match != 0);
 
-                // only render if this is a new level than previous,
-                // and next line is different; this ensures that links will be grouped!
-                if ($next_is_different && $is_new_level) {
-                    $lvl = ($i > 5) ? 6 : $i + 1; // html heading number 1-6 (forgive the magic no's)
+                // only render if:
+                //   1. next entry is different, and...
+                //   2. this is a new level or a link
+                //   (this ensures that links will be grouped)
+                if ($next_differs && ($is_level || $is_link)) {
                     if ($proper) $cur_level = ucwords($cur_level);
                     if ($is_link) {
                         $anchor = clean_id($entry);
@@ -180,10 +190,11 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     }
                     $heights[] = $ratios[$lvl] - 1;
                 }
-            }
-            if ($next_is_different) {
-                $prev_levels = $cur_levels;
-            }
+                $lvl = ($lvl > 5) ? 6 : $lvl + 1; // html heading number 1-6 (forgive the magic no's = h1 to h6)
+                $cur_level = $next_level;
+            } while ($next_level !== false);
+
+            $prev_entry = $entry;
         } while ($next !== false);
 
         return array($lines, $heights);
@@ -203,8 +214,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
         $noborder_css = ' class="noborder" ';
         $border_style = ($opt['border'] == 'outside' || $opt['border'] == 'both') ? '' : $noborder_css;
-        // fixed point to jump back to at top of the table
-        $top_id = 'top-' . mt_rand();
+        $top_id = 'top-' . mt_rand();  // fixed point to jump back to at top of the table
         $render = '<div id="subjectindex"' . $border_style . '>' . DOKU_LF;
         $render .= '<table id="' . $top_id . '">' . DOKU_LF;
 
@@ -215,7 +225,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                 $new_col = true;
                 $col++;
             }
-            // new column, starts only at headings not at page links (for clarity)
+            // new column, starts only at headings not at page links (for visual clarity)
             if ($new_col && $prev_was_link) {
                 $border_style = ($opt['border'] == 'inside' || $opt['border'] == 'both') ? '' : $noborder_css;
                 // close the previous column if necessary
@@ -225,6 +235,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             }
             // render each entry line
             list($lvl, $cur_level, $pages, $anchor) = $line;
+
             // remove the ordering number from the entry if requested
             if ( ! $opt['showorder']) {
                 $matched = preg_match('/^\d+\.(.+)/', $cur_level, $matches);

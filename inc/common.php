@@ -9,10 +9,6 @@ define('SUBJ_IDX_INDEX_NAME', 'subject');
 define('SUBJ_IDX_DEFAULT_DIR', DOKU_INC . 'data/index/');
 define('SUBJ_IDX_DEFAULT_PAGE', ':subjectindex');
 
-define('SUBJ_IDX_TAG_RGX', '(?<=\s|^)#[^0-9\s]+');
-define('SUBJ_IDX_ENTRY_RGX', '\{\{entry>.+?\}\}');
-define('SUBJ_IDX_INDEXER_RGX', '\{\{entry>(.+?)\}\}');
-
 define('SUBJ_IDX_SECTION_MAX', 9);
 
 /**

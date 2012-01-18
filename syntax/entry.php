@@ -19,10 +19,13 @@ if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
+require_once(DOKU_PLUGIN . 'subjectindex/inc/matcher.php');
 
 class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
+    private $matcher = MatchEntry;
 
-	function __construct() {
+    function __construct() {
+        $this->matcher = new MatchEntry();
     }
 
     function getType() {
@@ -38,62 +41,46 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	}
 
 	function connectTo($mode) {
-        // Syntax: {{entry>[idx no./heading/]entry text[|display name]}}    [..] optional
-		$pattern = SUBJ_IDX_ENTRY_RGX;
-		$this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
-        // Syntax: #tag, or #multi_word_tag (any chars accepted after the # symbols **except space**, first char cannot be 0-9!)
-        $pattern = SUBJ_IDX_TAG_RGX;
-        $this->Lexer->addSpecialPattern($pattern, $mode, 'plugin_subjectindex_entry');
+        foreach ($this->matcher as $matcher) {
+            $this->Lexer->addSpecialPattern($matcher->regex, $mode, 'plugin_subjectindex_entry');
+        }
 	}
 
 	function handle($match, $state, $pos, &$handler) {
-        // first look for 'special' tag patterns: #tag#
-        if($match[0] != '{') {
-            $entry = utf8_trim($match, '#');    // remove the '#''s (old syntax also had at end...)
-            $display = str_replace('_', ' ', $entry);  // swap '_' for spaces for display
-            $section = $this->getConf('subjectindex_tag_section'); //index section used for tags!
-            $is_tag = true;
-        } else {
-            $end = strpos($match, '>');
-            $data = substr($match, $end + 1, -2); // remove {{entry>...}} markup
-            list($entry, $display) = explode('|', $data);
-            if (preg_match('`^\d+\/.+`', $entry) > 0) {
-                // first digit refers to the index section to be used
-                list($section, $entry) = explode('/', $entry, 2);
-            } else {
-                $section = 0;
+        if ($this->matcher->match($match) === true) {
+            $entry = $this->matcher->first['entry'];
+            $display = $this->matcher->first['display'];
+            $section = $this->matcher->first['section'];
+            $type = $this->matcher->first['type'];
+
+            require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
+            $link_id = clean_id($entry);
+            $entry = $this->remove_ord($entry); // remove any ordered list numbers (used for manual sorting)
+            $sep = $this->getConf('subjectindex_display_sep');
+
+            $hide = false;
+            if ( ! isset($display)) {
+                $display = '';
+            // invisible entry, do not display!
+            } elseif ($display == '-') {
+                $display = '';
+                $hide = true;
+            // no display so show star by default
+            } elseif ((isset($display) && empty($display)) || $display == '*') {
+                $display = str_replace('/', $sep, $entry);
             }
-            $is_tag = false;
+            $entry = str_replace('/', $sep, $entry);
+            $target_page = get_target_page($section);
+            return array($entry, $display, $link_id, $target_page, $hide, $type);
         }
-
-        require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
-        $link_id = clean_id($entry);
-        $entry = $this->remove_ord($entry); // remove any ordered list numbers (used for manual sorting)
-        $sep = $this->getConf('subjectindex_display_sep');
-
-        $hide = false;
-        if ( ! isset($display)) {
-            $display = '';
-        // invisible entry, do not display!
-        } elseif ($display == '-') {
-            $display = '';
-            $hide = true;
-        // no display so show star by default
-        } elseif ((isset($display) && empty($display)) || $display == '*') {
-            $display = str_replace('/', $sep, $entry);
-        }
-
-        $entry = str_replace('/', $sep, $entry);
-        $target_page = get_target_page($section);
-		return array($entry, $display, $link_id, $target_page, $hide, $is_tag);
 	}
 
 	function render($mode, &$renderer, $data) {
-        list($entry, $display, $link_id, $target_page, $hide, $is_tag) = $data;
+        list($entry, $display, $link_id, $target_page, $hide, $type) = $data;
 
         if ($mode == 'xhtml') {
             $hidden = ($hide) ? ' hidden' : '';
-            $entry = ($is_tag) ? $this->getLang('subjectindex_tag') . $entry : $this->getLang('subjectindex_prefix') . $entry;
+            $entry = $this->getLang($type . '_prefix') . $entry;
             if (empty($target_page)) {
                 $title = $this->getLang('no_default_target');
                 $target_page = '';

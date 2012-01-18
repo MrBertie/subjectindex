@@ -1,22 +1,26 @@
 div.dokuwiki a.entry,
 div.dokuwiki a.bad-entry {
-    font-size:80%;
-    padding:1px 3px 3px 14px;
-    margin:0 3px 0 0;
-    display:inline;
-    vertical-align:top;
-    background: transparent url(images/star-blue.png) 0px 0px no-repeat;
+    font-size: 95%;
+    padding:1px 3px 3px 16px;
+    margin:0;
+    display: inline;
+    background: transparent url(images/star-blue.png) 2px 1px no-repeat;
+    color: #227BBA;
+    border: 1px dotted __background_alt__;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
 }
 
 div.dokuwiki a.bad-entry {
-    background: transparent url(images/star-grey.png) 0px 0px no-repeat;
+    background: transparent url(images/star-grey.png) 2px 1px no-repeat;
 }
 
 div.dokuwiki a.entry:hover {
     text-decoration:none;
-    text-shadow: 0 0 2px #CA4A07;
+    text-shadow: 0 0 2px #D2A354;
     cursor:pointer;
-    background: transparent url(images/star-yellow.png) 0px 0px no-repeat;
+    background: transparent url(images/star-yellow.png) 2px 1px no-repeat;
 }
 
 div.dokuwiki div#subjectindex {
@@ -72,9 +76,9 @@ div.dokuwiki div#subjectindex h1 {
     padding:0px 0px 3px 7px;
     text-indent:0;
     background:#EDEDED;
-    -moz-border-radius:6px;
-    -webkit-border-radius:6px;
-    border-radius: 6px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    border-radius: 4px;
 }
 div.dokuwiki div#subjectindex h2 {font-size:117%; font-weight:bold;}
 div.dokuwiki div#subjectindex h3 {font-size:110%;}

@@ -8,6 +8,8 @@
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'action.php');
+require_once(DOKU_INC.'inc/logger.php');
+require_once(DOKU_PLUGIN . 'subjectindex/inc/matcher.php');
 
 class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
 
@@ -46,40 +48,26 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
 
         // now get all marked up entries for this wiki page
         $wiki = rawWiki($page);
-        $match_cnt = preg_match_all('`' . SUBJ_IDX_INDEXER_RGX. '`', $wiki, $entry_matches);
-        if ($match_cnt > 0) {
-            $matches = $entry_matches[1];
-            $matched = true;
+        $matches = array();
+
+        $matcher = new MatchEntry();
+        if ($matcher->match($wiki) === true) {
+            $matches = $matcher->all;
         }
-        // then deal with special tag matches
-        $tag_section = $this->getConf('subjectindex_tag_section');
-        if ( ! empty($tag_section)) {
-            $match_cnt = preg_match_all('/(' . SUBJ_IDX_TAG_RGX . ')/', $wiki, $tag_matches);
-            if ($match_cnt > 0) {
-                foreach ($tag_matches[0] as $tag) {
-                    $matches[] = $tag_section . "/" . utf8_trim($tag, '#');
-                }
-                $matched = true;
-            }
-        }
+
         $updated = false;
-        if ($matched) {
-            foreach ($matches as $match) {
-                // remove any display syntax
-                $match = strtok($match, '|');
-                // add section number if missing (a section no. should match: <digit>/<text>...
-                if (preg_match('`^\d+\/.+`', $match) == 0) $match = "0/" . $match;
-                // compare the current page's entries with the delete list
-                $exists = preg_grep('`^' . $match . '`', $page_entry_idx);
-                if ( ! empty($exists)) {
-                    // IGNORE: exists in current and original: remove from "delete list"
-                    $key = $this->_key($exists, 0);
-                    unset($page_entry_idx[$key]);
-                } else {
-                    // CREATE: must be a completely new entry then...
-                    $entry_idx[] = $match . '|' . $pid . "\n";
-                    $updated = true;
-                }
+        foreach ($matches as $match) {
+            $entry = $match['section'] . '/' . $match['entry'];
+            // compare the current page's entries with the delete list
+            $exists = preg_grep('`^' . $entry . '`', $page_entry_idx);
+            if ( ! empty($exists)) {
+                // IGNORE: exists in current and original: remove from "delete list"
+                $key = $this->_key($exists, 0);
+                unset($page_entry_idx[$key]);
+            } else {
+                // CREATE: must be a completely new entry then...
+                $entry_idx[] = $entry . '|' . $pid . "\n";
+                $updated = true;
             }
         }
         // DELETE: these index entries no longer exist on current wiki page
