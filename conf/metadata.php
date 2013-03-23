@@ -7,5 +7,5 @@
  */
 
 $meta['subjectindex_data_dir'] = array('string');
+
 $meta['subjectindex_display_sep'] = array('string');
-?>

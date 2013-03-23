@@ -1,133 +1,140 @@
 div.dokuwiki a.entry,
 div.dokuwiki a.bad-entry {
-    font-size: 95%;
-    padding:1px 3px 3px 16px;
-    margin:0;
-    display: inline;
-    background: transparent url(images/star-blue.png) 2px 1px no-repeat;
-    color: #227BBA;
-    border: 1px dotted __background_alt__;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
+    background: transparent url(images/star-grey.png) 2px 1px no-repeat;
+    background-size: 10px 10px;
+    background-position: right 15%;
+    /*border: 1px dotted __background_alt__;
     border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;*/
+    color: #227BBA;
+    color: #586e75;
+    display: inline;
+    font-size: 95%;
+    margin:0;
+    padding:1px 14px 3px 3px;
 }
 
 div.dokuwiki a.bad-entry {
-    background: transparent url(images/star-grey.png) 2px 1px no-repeat;
+    /*background: transparent url(images/star-grey.png) 2px 1px no-repeat;*/
+    opacity: 0.4;
 }
 
 div.dokuwiki a.entry:hover {
+    /*background: transparent url(images/star-yellow.png) 2px 1px no-repeat;*/
+    background-size: 12px 12px;
+    cursor:pointer;
     text-decoration:none;
     text-shadow: 0 0 2px #D2A354;
-    cursor:pointer;
-    background: transparent url(images/star-yellow.png) 2px 1px no-repeat;
 }
 
-div.dokuwiki div#subjectindex {
-    overflow: hidden;
-    padding:4px;
-    font-size:80%;
-    text-align:left;
+
+div.dokuwiki .subjectindex {
+	border-color:#D7D5D4;
+    border-radius: 8px;
     -moz-border-radius:8px;
     -webkit-border-radius:8px;
-    border-radius: 8px;
-    position:relative;
-}
-div.dokuwiki div#subjectindex,
-div.dokuwiki div#subjectindex td {
-    border-width:1px;
 	border-style:solid;
-	border-color:#D7D5D4;
+    border-width:1px;
+    font-size:80%;
+    margin:0;
+    padding:4px;
+    position:relative;
+    text-align:left;
+    width:100%;
 }
-div.dokuwiki div#subjectindex.noborder,
-div.dokuwiki div#subjectindex  td.noborder,
-div.dokuwiki div#subjectindex  td:nth-last-child(1),
-div.dokuwiki div#subjectindex table {
-    border-width:0;
+div.dokuwiki .subjectindex .inner {
+    column-gap: 1em;
+    -moz-column-gap: 1em;
+    -webkit-column-gap: 1em;
+    column-width: 15em;
+    -moz-column-width: 15em;
+    -webkit-column-width: 15em;
+    column-rule: 1px solid #D7D5D4;
+    -moz-column-rule: 1px solid #D7D5D4;
+    -webkit-column-rule: 1px solid #D7D5D4;
+	padding:7px 8px;
 }
-
-
+div.dokuwiki .subjectindex .noinnerborder {
+    column-rule: 0;
+    -moz-column-rule: 0;
+    -webkit-column-rule: 0;
+}
 .hidden {
     visibility:hidden;
 }
 
-div.dokuwiki div#subjectindex h1,
-div.dokuwiki div#subjectindex h2,
-div.dokuwiki div#subjectindex h3,
-div.dokuwiki div#subjectindex h4,
-div.dokuwiki div#subjectindex h5,
-div.dokuwiki div#subjectindex h6 {
+div.dokuwiki .subjectindex h1,
+div.dokuwiki .subjectindex h2,
+div.dokuwiki .subjectindex h3,
+div.dokuwiki .subjectindex h4,
+div.dokuwiki .subjectindex h5,
+div.dokuwiki .subjectindex h6 {
+    color:#3B3B3B;
+    display: block;
     line-height:115%;
-    padding:0.06em 0 0.03em 0;
     margin:0;
     margin-bottom:2px;
-    color:#3B3B3B;
+    padding:0.06em 0 0.03em 0;
     padding-left:12px;
 	text-indent:-12px;
 }
-div.dokuwiki div#subjectindex h3,
-div.dokuwiki div#subjectindex h4,
-div.dokuwiki div#subjectindex h5,
-div.dokuwiki div#subjectindex h6 {
+div.dokuwiki .subjectindex h3,
+div.dokuwiki .subjectindex h4,
+div.dokuwiki .subjectindex h5,
+div.dokuwiki .subjectindex h6 {
     font-weight:normal;
 }
-div.dokuwiki div#subjectindex h1 {
+div.dokuwiki .subjectindex h1 {
+    background:#EDEDED;
+    break-after: avoid-column;
+    -moz-break-after: avoid-column;
+    -webkit-column-break-after: avoid;
+    border-radius: 4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
     font-size:125%;
     padding:0px 0px 3px 7px;
     text-indent:0;
-    background:#EDEDED;
-    -moz-border-radius:4px;
-    -webkit-border-radius:4px;
-    border-radius: 4px;
 }
-div.dokuwiki div#subjectindex h2 {font-size:117%; font-weight:bold;}
-div.dokuwiki div#subjectindex h3 {font-size:110%;}
-div.dokuwiki div#subjectindex h4 {font-size:103%;}
-div.dokuwiki div#subjectindex h5 {font-size:96%;}
-div.dokuwiki div#subjectindex h6 {font-size:90%;}
+div.dokuwiki .subjectindex h2 {font-size:117%; font-weight:bold;}
+div.dokuwiki .subjectindex h3 {font-size:110%;}
+div.dokuwiki .subjectindex h4 {font-size:103%;}
+div.dokuwiki .subjectindex h5 {font-size:96%;}
+div.dokuwiki .subjectindex h6 {font-size:90%;}
 
-div.dokuwiki div#subjectindex table {
-    border-collapse:collapse;
-    width:100%;
-    margin:0;
+div.dokuwiki .subjectindex span.links,
+div.dokuwiki .subjectindex a {
 }
-div.dokuwiki div#subjectindex td {
-	border-width:0 1px 0 0;
-	padding:7px 8px;
-	background-color:white;
-}
-div.dokuwiki div#subjectindex span.links,
-div.dokuwiki div#subjectindex a {
-}
-div.dokuwiki div#subjectindex span.links {
-    padding:2px 3px;
-    margin-left:3px;
-    font-size:82%;
+div.dokuwiki .subjectindex span.links {
     color:#989898;
     font-weight:normal;
+    font-size:82%;
     font-style:italic;
+    margin-left:3px;
+    padding:2px 3px;
 }
-div.dokuwiki div#subjectindex a {
-    padding:0 2px;
+div.dokuwiki .subjectindex a {
     font-weight:normal;
+    padding:0 2px;
 }
-div.dokuwiki div#subjectindex a:hover {
+div.dokuwiki .subjectindex a:hover {
     color:black !important;
     text-decoration:none;
 }
-div.dokuwiki div#subjectindex span.frequency {
-    display:inline;
-    font-weight:normal;
+div.dokuwiki .subjectindex span.frequency {
     color:#B2B2B2;
+    display:inline;
+    font-size:80%;
+    font-weight:normal;
+    line-height:130%;
     margin-left:3px;
     vertical-align:top;
-    font-size:80%;
-    line-height:130%;
 }
-div.dokuwiki div#subjectindex a.top {
-    position:absolute;
+div.dokuwiki .subjectindex a.top {
     bottom:-1.5em;
-    right:0.5em;
-    font-style:italic;
     color:#A0A0A0;
+    font-style:italic;
+    position:absolute;
+    right:0.5em;
 }

@@ -47,6 +47,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	}
 
 	function handle($match, $state, $pos, &$handler) {
+
         if ($this->matcher->match($match) === true) {
             $entry = $this->matcher->first['entry'];
             $display = $this->matcher->first['display'];
@@ -54,14 +55,16 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
             $type = $this->matcher->first['type'];
 
             require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
-            $link_id = clean_id($entry);
-            $entry = $this->remove_ord($entry); // remove any ordered list numbers (used for manual sorting)
+            $link_id = SubjectIndex::clean_id($entry);
+
+            // remove any ordered list numbers (used for manual sorting)
+            $entry = $this->remove_ord($entry);
             $sep = $this->getConf('subjectindex_display_sep');
 
             $hide = false;
             if ( ! isset($display)) {
                 $display = '';
-            // invisible entry, do not display!
+            // invisible entry, do not display at all
             } elseif ($display == '-') {
                 $display = '';
                 $hide = true;
@@ -70,39 +73,58 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
                 $display = str_replace('/', $sep, $entry);
             }
             $entry = str_replace('/', $sep, $entry);
-            $target_page = get_target_page($section);
+            $target_page = SubjectIndex::get_target_page($section);
+
             return array($entry, $display, $link_id, $target_page, $hide, $type);
+
+        } else {
+            // if it wasn't a recognised verse then just return the original match for display
+            return $match;
         }
 	}
 
+
 	function render($mode, &$renderer, $data) {
-        list($entry, $display, $link_id, $target_page, $hide, $type) = $data;
 
         if ($mode == 'xhtml') {
-            $hidden = ($hide) ? ' hidden' : '';
-            $entry = $this->getLang($type . '_prefix') . $entry;
-            if (empty($target_page)) {
-                $title = $this->getLang('no_default_target');
-                $target_page = '';
-                $class = 'bad-entry';
+            // just re-display a failed verse match
+            if ( ! is_array($data)) {
+                $renderer->doc .= $data;
             } else {
-                $target_page = wl($target_page) . '#' . $link_id;
-                $title = $this->html_encode($entry);
-                $class = 'entry';
+                list($entry, $display, $link_id, $target_page, $hide, $type) = $data;
+                $hidden = ($hide) ? ' hidden' : '';
+                $entry = $this->getLang($type . '_prefix') . $entry;
+                $display = $this->html_encode($display);
+
+                if (empty($target_page)) {
+                    $target_page = '';
+                    $title = $this->getLang('no_default_target');
+                    $class = 'bad-entry';
+                } else {
+                    $target_page = wl($target_page) . '#' . $link_id;
+                    $title = $this->html_encode($entry);
+                    $class = 'entry';
+                }
+                $renderer->doc .= '<a id="' . $link_id . '" class="' . $class . $hidden .
+                                  '" title="' . $title .
+                                  '" href="' . $target_page . '">' .
+                                  $display .
+                                  '</a>' . DOKU_LF;
             }
-			$renderer->doc .= '<a id="' . $link_id . '" class="' . $class . $hidden .
-                              '" title="' . $title .
-                              '" href="' . $target_page . '">' .
-                              $this->html_encode($display) . '</a>' . DOKU_LF;
 			return true;
 		}
 		return false;
 	}
 
+
+    // *************************************
+
+
     private function html_encode($text) {
         $text = htmlentities($text, ENT_QUOTES, 'UTF-8');
         return $text;
     }
+
 
     private function remove_ord($text) {
         $text = preg_replace('`^\d+\.`', '', $text);

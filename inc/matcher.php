@@ -5,10 +5,9 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
 
 class MatchEntry implements IteratorAggregate {
-
     public $all = array();
     public $first = array();
-    private $types = array('Tag', 'Verse', 'Plain');
+    private $types = array('Tag', 'Verse', 'Plain');    // NOTE: Add additional Matchers to this list in matching order
     private $matchers = array();
 
     function __construct() {
@@ -38,17 +37,19 @@ class MatchEntry implements IteratorAggregate {
     }
 }
 
+
 class Entry {
 
-    public $items = array();
-    public $type = 'plain';
-    public $section = 0;
+    public $items = array();    // the different elements of the match: section, display, entry, type
+    public $type = 'plain';     // type of entry matched
+    public $section = 0;        // section this entry will be added to
 
     public $regex = '';
 
     function match() {
     }
 }
+
 
 class EntryPlain extends Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
@@ -79,6 +80,12 @@ class EntryPlain extends Entry {
     }
 }
 
+
+/**
+ * Matches web-style hash tags: #tags #mutli_word_tag
+ * No spaces allowed, but all UTF-8 chars recognised
+ * Underscores are displayed as spaces
+ */
 class EntryTag extends Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
     public $regex = '(?<=\s|^)\#[^0-9\s]+';
@@ -109,6 +116,11 @@ class EntryTag extends Entry {
     }
 }
 
+
+/**
+ * Matches bible verse references
+ * No allowance for multiple verse references with only one book name!
+ */
 class EntryVerse extends Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
     public $regex = '(?:[123]\h?)?(?:[A-Z][a-zA-Z]+|Song of Solomon)\s1?[0-9]?[0-9]:\d{1,3}(?:[,-]\d{1,3})*';
@@ -118,9 +130,9 @@ class EntryVerse extends Entry {
         $this->section = 2;
         $this->type = 'verse';
         // array of possible abbreviations (space separated)
-        $this->abbr = file(DOKU_PLUGIN . 'subjectindex/conf/bible_abbr.txt', FILE_IGNORE_NEW_LINES | FILE_TEXT);
+        $this->abbrs = file(DOKU_PLUGIN . 'subjectindex/conf/bible_abbr.txt', FILE_IGNORE_NEW_LINES | FILE_TEXT);
         // array of proper book names
-        $this->book = file(DOKU_PLUGIN . 'subjectindex/conf/bible_books.txt', FILE_IGNORE_NEW_LINES | FILE_TEXT);
+        $this->books = file(DOKU_PLUGIN . 'subjectindex/conf/bible_books.txt', FILE_IGNORE_NEW_LINES | FILE_TEXT);
     }
 
     function match($text) {
@@ -135,15 +147,16 @@ class EntryVerse extends Entry {
                 $chp = $match[3];
                 $verse = $match[4];
                 // abbreviation match test
-                $hit = (preg_grep('/(^|\s)' . $abbr . '($|\s)/', $this->abbr));
+                $hit = (preg_grep('/(^|\s)' . $abbr . '($|\s)/', $this->abbrs));
                 // try for a full book name match also if abbr fails
                 if (empty($hit)) {
-                    $hit = preg_grep('/(^|\s)' . $book . '($|\s)/', $this->book);
+                    $hit = preg_grep('/(^|\s)' . $book . '($|\s)/', $this->books);
                 }
                 if ( ! empty($hit)) {
                     $num = key($hit);
-                    $book = $this->book[$num];
+                    $book = $this->books[$num];
                     $item = &$this->items[];
+
                     $item['display'] = $book . ' ' . $chp . ':' . $verse;
                     // add an ordinal to keep the book names in correct order
                     $item['entry'] = $num . '.' . $book . '/' . $book . ' ' . $chp . ':/' . $verse;
@@ -153,14 +166,7 @@ class EntryVerse extends Entry {
                 }
             }
             return $matched;
-        } else {
-            return false;
         }
+        return false;
     }
 }
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-?>

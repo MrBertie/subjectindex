@@ -1,66 +1,66 @@
-ge
+ge gen
 ex
-le
-nu
+le lev
+nu num
 de
 jos
 jg
 ru
-1sa
-2sa
-1ki
-2ki
-1ch
-2ch
-ezr
-ne
-es
+1sa 1sam
+2sa 2sam
+1ki 1kg
+2ki 1kg
+1ch 1chr
+2ch 2chr
+ezr 
+ne nem
+es est
 job
-ps
-pr
-ec
-ca
+ps psa
+pr pro
+ec ecc eccl
+ca sos sng
 isa
 jer
-la
+la lam
 eze
-da
-ho
-joe
-am
-ob
+da dan
+ho hos
+joe joel
+am amo amos
+ob oba
 jon
 mic
-na
+na nah
 hab
-zep
+zep zeph
 hag
-zec
+zec zech
 mal
-mt
-mr
-lu
-joh
-ac
-ro
-1co
-2co
-ga
+mt mat matt
+mr mk mark
+lu luke
+joh john
+ac act
+ro rom
+1co 1cor
+2co 2cor
+ga gal
 eph
-php
+php 
 col
 1th
 2th
-1ti
-2ti
+1ti 1tim
+2ti 2tim
 tit
 phm
 heb
 jas
-1pe
-2pe
+1pe 1pet
+2pe 2pet
 1jo
 2jo
 3jo
 jude
-re
+re rev

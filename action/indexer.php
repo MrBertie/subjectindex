@@ -21,9 +21,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
 
     function _subject_index(&$event, $param) {
         if (isset($event->data['page'])) {
-            $page = $event->data['page']; // param names changed in Rincewind release
-        } else {
-            $page = $event->data[0];    // pre-Rincewind params
+            $page = $event->data['page'];
         }
         if (empty($page)) return;   // get out if no such wikipage
 
@@ -38,12 +36,14 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         if ($this->_cleanup_time()) {
             $this->_remove_invalid_entries($entry_idx, $page_idx);
         }
+        unset($page_idx);
 
         // get page id--this corresponds to line number in page.idx file
-        $pid = array_search("$page\n", $page_idx);
+        $indexer = idx_get_indexer();
+        $pid = $indexer->getPID($page);
+
         // grab all current subject index entries that match this page: the "delete list"
         $page_entry_idx = preg_grep('`.*\|' . $pid . '$`', $entry_idx);
-        unset($page_idx);
 
         // now get all marked up entries for this wiki page
         $wiki = rawWiki($page);
