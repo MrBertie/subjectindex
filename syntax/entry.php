@@ -21,6 +21,7 @@ require_once(DOKU_PLUGIN.'syntax.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/matcher.php');
 
+
 class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
     private $matcher = MatchEntry;
 
@@ -41,8 +42,10 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	}
 
 	function connectTo($mode) {
-        foreach ($this->matcher as $matcher) {
-            $this->Lexer->addSpecialPattern($matcher->regex, $mode, 'plugin_subjectindex_entry');
+        if ( ! in_array($mode, array('preformatted', 'code', 'file', 'php', 'html'))) {
+            foreach ($this->matcher as $matcher) {
+                $this->Lexer->addSpecialPattern($matcher->regex, $mode, 'plugin_subjectindex_entry');
+            }
         }
 	}
 
@@ -78,7 +81,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
             return array($entry, $display, $link_id, $target_page, $hide, $type);
 
         } else {
-            // if it wasn't a recognised verse then just return the original match for display
+            // It wasn't a recognised item so just return the original match for display
             return $match;
         }
 	}
@@ -87,7 +90,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	function render($mode, &$renderer, $data) {
 
         if ($mode == 'xhtml') {
-            // just re-display a failed verse match
+            // just re-display a failed match
             if ( ! is_array($data)) {
                 $renderer->doc .= $data;
             } else {

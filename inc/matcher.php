@@ -88,8 +88,8 @@ class EntryPlain extends Entry {
  */
 class EntryTag extends Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
-    public $regex = '(?<=\s|^)\#[^0-9\s]+';
-    private $_regex = '/(?<=\s|^)\#([^0-9\s]+)/';
+    public $regex = '(?<=\s|^)\#[^\s]+';
+    private $_regex = '/(?<=\s|^)\#([^\s]+)/';
 
     function __construct() {
         $this->type = 'tag';
@@ -103,7 +103,7 @@ class EntryTag extends Entry {
         if ($hits > 0) {
             foreach ($matches as $match) {
                 $item = &$this->items[];
-                $tag = utf8_trim($match[1], '#');  // remove any '#''s (old syntax also had # at end...)
+                $tag = utf8_trim($match[1], '#');  // remove any '#''s
                 $item['entry'] = $tag;
                 $item['display'] = str_replace('_', ' ', $tag);  // swap '_' for spaces for display
                 $item['section'] = $this->section;
@@ -153,7 +153,7 @@ class EntryVerse extends Entry {
                     $hit = preg_grep('/(^|\s)' . $book . '($|\s)/', $this->books);
                 }
                 if ( ! empty($hit)) {
-                    $num = key($hit);
+                    $num = key($hit);   // line number in abbr list, used to keep books in correct order
                     $book = $this->books[$num];
                     $item = &$this->items[];
 

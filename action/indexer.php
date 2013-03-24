@@ -10,16 +10,18 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'action.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/matcher.php');
 
+
 class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
 
     /**
      * Register its handlers with the DokuWiki's event controller
      */
     function register(&$controller) {
-        $controller->register_hook('INDEXER_PAGE_ADD', 'AFTER', $this, '_subject_index');
+        $controller->register_hook('INDEXER_PAGE_ADD', 'AFTER', $this, 'handle');
     }
 
-    function _subject_index(&$event, $param) {
+    
+    function handle(&$event, $param) {
         if (isset($event->data['page'])) {
             $page = $event->data['page'];
         }
@@ -29,18 +31,22 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         $page_idx = idx_getIndex('page', '');
 
         require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
-        $index_file = get_subj_index($this->getConf('subjectindex_data_dir'));
+        $index_file = SubjectIndex::get_index($this->getConf('subjectindex_data_dir'));
         $entry_idx = file($index_file);
 
         // first remove any entries that reference non-existant files (currently once a day!)
         if ($this->_cleanup_time()) {
             $this->_remove_invalid_entries($entry_idx, $page_idx);
         }
-        unset($page_idx);
 
         // get page id--this corresponds to line number in page.idx file
-        $indexer = idx_get_indexer();
-        $pid = $indexer->getPID($page);
+        if (INDEXER_VERSION < 5) {
+            $pid = array_search("$page\n", $page_idx);
+        } else {
+            $indexer = idx_get_indexer();
+            $pid = $indexer->getPID($page);
+        }
+        unset($page_idx);
 
         // grab all current subject index entries that match this page: the "delete list"
         $page_entry_idx = preg_grep('`.*\|' . $pid . '$`', $entry_idx);
@@ -80,6 +86,8 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             file_put_contents($index_file, $entry_idx);
         }
     }
+
+
     /**
      * String compare function: sorts index "paths" correctly
      * i.e. root paths come before leaves
@@ -98,6 +106,8 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         }
         return strnatcasecmp($a, $b);
     }
+
+
     /**
      * Returns position key instead of string key
      *
@@ -109,6 +119,7 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         $temp = array_slice($a, $pos, 1, true);
         return key($temp);
     }
+
 
     private function _remove_invalid_entries(&$entry_idx, $page_idx) {
         $missing_idx = array();
@@ -126,6 +137,8 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
             }
         }
     }
+
+
     /**
      * Returns true if a day has passed since last cleanup
      * @return bool true => time to do clean up

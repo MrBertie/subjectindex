@@ -115,7 +115,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             require_once (DOKU_INC . 'inc/indexer.php');
             $page_idx = idx_getIndex('page', '');
 
-            $lines = $this->_create_index($subject_idx, $page_idx, $opt['section'], $opt['noatoz'], $opt['proper']);
+            $lines = $this->_create_index($subject_idx, $page_idx, $opt['section'], $opt['hideatoz'], $opt['proper']);
             $renderer->doc .= $this->_render_index($lines, $opt);
         } else {
             return false;
