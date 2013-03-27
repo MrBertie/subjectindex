@@ -3,45 +3,39 @@ div.dokuwiki a.bad-entry {
     background: transparent url(images/star-grey.png) 2px 1px no-repeat;
     background-size: 10px 10px;
     background-position: right 15%;
-    /*border: 1px dotted __background_alt__;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;*/
     color: #227BBA;
     color: #586e75;
     display: inline;
     font-size: 95%;
-    margin:0;
-    padding:1px 14px 3px 3px;
+    margin: 0;
+    padding: 1px 14px 3px 3px;
 }
 
 div.dokuwiki a.bad-entry {
-    /*background: transparent url(images/star-grey.png) 2px 1px no-repeat;*/
     opacity: 0.4;
 }
 
 div.dokuwiki a.entry:hover {
-    /*background: transparent url(images/star-yellow.png) 2px 1px no-repeat;*/
     background-size: 12px 12px;
-    cursor:pointer;
-    text-decoration:none;
+    cursor: pointer;
+    text-decoration: none;
     text-shadow: 0 0 2px #D2A354;
 }
 
 
 div.dokuwiki .subjectindex {
-	border-color:#D7D5D4;
-    border-radius: 8px;
-    -moz-border-radius:8px;
-    -webkit-border-radius:8px;
-	border-style:solid;
-    border-width:1px;
-    font-size:80%;
-    margin:0;
-    padding:4px;
-    position:relative;
-    text-align:left;
-    width:100%;
+	border-color: #D7D5D4;
+    border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+	border-style: solid;
+    border-width: 1px;
+    font-size: 80%;
+    margin: 0;
+    padding: 4px;
+    position: relative;
+    text-align: left;
+    width: 100%;
 }
 div.dokuwiki .subjectindex .inner {
     column-gap: 1em;
@@ -53,7 +47,7 @@ div.dokuwiki .subjectindex .inner {
     column-rule: 1px solid #D7D5D4;
     -moz-column-rule: 1px solid #D7D5D4;
     -webkit-column-rule: 1px solid #D7D5D4;
-	padding:7px 8px;
+	padding: 7px 8px;
 }
 div.dokuwiki .subjectindex .noinnerborder {
     column-rule: 0;
@@ -61,7 +55,13 @@ div.dokuwiki .subjectindex .noinnerborder {
     -webkit-column-rule: 0;
 }
 .hidden {
-    visibility:hidden;
+    visibility: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.no-text {
+    padding: 1px 9px 3px 3px !important;
+    margin-right: 3px !important;
 }
 
 div.dokuwiki .subjectindex h1,
@@ -70,12 +70,12 @@ div.dokuwiki .subjectindex h3,
 div.dokuwiki .subjectindex h4,
 div.dokuwiki .subjectindex h5,
 div.dokuwiki .subjectindex h6 {
-    color:#3B3B3B;
+    color: #3B3B3B;
     display: block;
     line-height:115%;
-    margin:0;
+    margin: 0;
     margin-bottom:2px;
-    padding:0.06em 0 0.03em 0;
+    padding: 0.06em 0 0.03em 0;
     padding-left:12px;
 	text-indent:-12px;
 }

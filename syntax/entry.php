@@ -65,14 +65,12 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
             $sep = $this->getConf('subjectindex_display_sep');
 
             $hide = false;
-            if ( ! isset($display)) {
-                $display = '';
-            // invisible entry, do not display at all
-            } elseif ($display == '-') {
+            if ($display == '-') {
+                // invisible entry, do not display at all
                 $display = '';
                 $hide = true;
-            // no display so show star by default
-            } elseif ((isset($display) && empty($display)) || $display == '*') {
+            } elseif (empty($display)) {
+                // default is full text of entry
                 $display = str_replace('/', $sep, $entry);
             }
             $entry = str_replace('/', $sep, $entry);
@@ -95,7 +93,14 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
                 $renderer->doc .= $data;
             } else {
                 list($entry, $display, $link_id, $target_page, $hide, $type) = $data;
-                $hidden = ($hide) ? ' hidden' : '';
+                if ($display == '*') {
+                    $display = '';
+                    $hidden = ' no-text';
+                } elseif ($hide) {
+                    $hidden = ' hidden';
+                } else {
+                    $hidden = '';
+                }
                 $entry = $this->getLang($type . '_prefix') . $entry;
                 $display = $this->html_encode($display);
 
@@ -108,6 +113,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
                     $title = $this->html_encode($entry);
                     $class = 'entry';
                 }
+
                 $renderer->doc .= '<a id="' . $link_id . '" class="' . $class . $hidden .
                                   '" title="' . $title .
                                   '" href="' . $target_page . '">' .
