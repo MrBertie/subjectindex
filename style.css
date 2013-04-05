@@ -1,3 +1,5 @@
+/* Subject entries */
+
 div.dokuwiki a.entry,
 div.dokuwiki a.bad-entry {
     background: transparent url(images/star-grey.png) 2px 1px no-repeat;
@@ -23,13 +25,15 @@ div.dokuwiki a.entry:hover {
 }
 
 
+/* Main subject index lists */
+
 div.dokuwiki .subjectindex {
 	border-color: #D7D5D4;
     border-radius: 6px;
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
 	border-style: solid;
-    border-width: 1px;
+    border-width: 0;
     font-size: 80%;
     margin: 0;
     padding: 4px;
@@ -37,22 +41,26 @@ div.dokuwiki .subjectindex {
     text-align: left;
     width: 100%;
 }
+div.dokuwki .subectindex.border {
+    border: 1px;
+}
+
 div.dokuwiki .subjectindex .inner {
     column-gap: 1em;
     -moz-column-gap: 1em;
     -webkit-column-gap: 1em;
-    column-width: 15em;
-    -moz-column-width: 15em;
-    -webkit-column-width: 15em;
-    column-rule: 1px solid #D7D5D4;
-    -moz-column-rule: 1px solid #D7D5D4;
-    -webkit-column-rule: 1px solid #D7D5D4;
-	padding: 7px 8px;
-}
-div.dokuwiki .subjectindex .noinnerborder {
     column-rule: 0;
     -moz-column-rule: 0;
     -webkit-column-rule: 0;
+    column-width: 15em;
+    -moz-column-width: 15em;
+    -webkit-column-width: 15em;
+	padding: 7px 8px;
+}
+div.dokuwiki .subjectindex .inner-border {
+    column-rule: 1px solid #D7D5D4;
+    -moz-column-rule: 1px solid #D7D5D4;
+    -webkit-column-rule: 1px solid #D7D5D4;
 }
 .hidden {
     visibility: hidden;

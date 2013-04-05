@@ -214,6 +214,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
 
     private function _split_entry($entry) {
+        $_ = null;
         list($text, $pid) = explode('|', $entry);
         // remove the index section number
         list($_, $text) = explode('/', $text, 2);
@@ -227,19 +228,22 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
         // now render the subject index table
 
-        $outer_border = ($opt['border'] == 'outside' || $opt['border'] == 'both') ? '' : ' class="noborder" ';
-        $inner_border = ($opt['border'] == 'inside' || $opt['border'] == 'both') ? '' : '.noinnerborder';
-        $top_id = 'top-' . mt_rand();  // fixed point to jump back to at top of the table
-        // columns
+        $outer_border = ($opt['border'] == 'outside' || $opt['border'] == 'both') ? 'border' : '';
+        $inner_border = ($opt['border'] == 'inside' || $opt['border'] == 'both') ? 'inner-border' : '';
+
+// fixed point to jump back to at top of the table
+        $top_id = 'top-' . mt_rand();
+
+        // optional columns width adjustments
         $cols = $opt['cols'];
         if (is_numeric($cols)) {
-            $col_style = 'style="column-count:' . $cols . '; -moz-column-count:' . $cols . '; -webkit-column-count:' . $cols . ';" ';
+            $col_style = 'column-count:' . $cols . '; -moz-column-count:' . $cols . '; -webkit-column-count:' . $cols . ';';
         } else {
-            $col_style = 'style="column-width:' . $cols . '; -moz-column-width:' . $cols . '; -webkit-column-width:' . $cols . ';" ';
+            $col_style = 'column-width:' . $cols . '; -moz-column-width:' . $cols . '; -webkit-column-width:' . $cols . ';';
         }
 
-        $render = '<div class="subjectindex " id="' . $top_id . '" ' . $outer_border . '>' . DOKU_LF;
-        $render .= '<div class="inner ' . $inner_border . '"' . $col_style . '>';
+        $render = '<div class="subjectindex ' . $outer_border . '" id="' . $top_id . '">' . DOKU_LF;
+        $render .= '<div class="inner ' . $inner_border . '" style="' . $col_style . '">';
 
         foreach ($lines as $line) {
 
@@ -253,8 +257,8 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     $cur_level = $matches[1];
                 }
             }
-            $indent_css = ' style="margin-left:' . ($lvl - 1) * 10 . 'px"';
-            $entry = "<h$lvl$indent_css";
+            $indent_style = 'margin-left:' . ($lvl - 1) * 10 . 'px';
+            $entry = '<h' . $lvl . ' style="' . $indent_style . '"';
 
             // render page links
             if ( ! empty($pages)) {
@@ -271,14 +275,14 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     $freq = '<span class="frequency">' . count($pages) . '</span>';
                 }
                 $anchor = ' id="' . $anchor . '"';
-                $entry .= "$anchor>$cur_level$freq" . '<span class="links">' . "$links</span></h$lvl>";
+                $entry .= $anchor . '>' . $cur_level . $freq . '<span class="links">' . $links . '</span></h' . $lvl . '>';
 
                 $prev_was_link = true;
                 $links = '';
 
             // render headings
             } else {
-                $entry .= ">$cur_level</h$lvl>";
+                $entry .= '>' . $cur_level . '</h' . $lvl . '>';
                 $prev_was_link = false;
             }
             $render .= $entry . DOKU_LF;
