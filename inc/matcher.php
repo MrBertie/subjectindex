@@ -123,8 +123,8 @@ class EntryTag extends Entry {
  */
 class EntryVerse extends Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
-    public $regex = '(?:[123]\h?)?(?:[A-Z][a-zA-Z]+|Song of Solomon)\s1?[0-9]?[0-9]:\d{1,3}(?:[,-]\d{1,3})*';
-    private $_regex = '/([123]\s*)?([A-Z][a-zA-Z]+|Song of Solomon)\s*(1?[0-9]?[0-9]):\s*(\d{1,3}([,-]\s*\d{1,3})*)/';
+    public $regex = '(?:[123]\h?)?(?:[A-Z][a-zA-Z]+|Song of Solomon)\.?\h?1?[0-9]?[0-9]:\d{1,3}(?:[,-]\h?\d{1,3})*';
+    private $_regex = '/([123]\h?)?([A-Z][a-zA-Z]+|Song of Solomon)\.?\h?(1?[0-9]?[0-9]):(\d{1,3}([,-]\h?\d{1,3})*)/';
 
     function __construct() {
         $this->section = 2;
@@ -142,8 +142,10 @@ class EntryVerse extends Entry {
         $hits = preg_match_all($this->_regex, $text, $matches, PREG_SET_ORDER);
         if ($hits > 0) {
             foreach ($matches as $match) {
-                $abbr = $match[1] . strtolower($match[2]);
-                $book = (empty($match[1])) ? $match[2] : $match[1] . ' ' . $match[2];
+                $num = trim($match[1]);
+                $name = trim($match[2]);
+                $abbr = $num . strtolower($name);
+                $book = (empty($num)) ? $name : $num . ' ' . $name;
                 $chp = $match[3];
                 $verse = $match[4];
                 // abbreviation match test

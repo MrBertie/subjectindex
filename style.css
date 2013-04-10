@@ -105,6 +105,16 @@ div.dokuwiki .subjectindex h1 {
     padding:0px 0px 3px 7px;
     text-indent:0;
 }
+div.dokuwiki .subjectindex h1.title {
+    background: none;
+    border-bottom: 1px solid #D7D5D4;
+    border-radius: 0;
+    -moz-border-radius:0;
+    -webkit-border-radius:0;
+    font-size:132%;
+    margin-bottom: 6px;
+}
+
 div.dokuwiki .subjectindex h2 {font-size:117%; font-weight:bold;}
 div.dokuwiki .subjectindex h3 {font-size:110%;}
 div.dokuwiki .subjectindex h4 {font-size:103%;}

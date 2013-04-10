@@ -56,6 +56,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         $opt['title']       = false;     // use title (first heading) instead of page name
         $opt['section']     = 0;         // which section to use and display (0-9)...hopefully 10 is enough
         $opt['showorder']   = false;     // display any bullet numbers used for ordering
+        $opt['label']       = '';
 
 		$args = explode(';', $match);
         foreach ($args as $arg) {
@@ -92,6 +93,9 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     break;
                 case 'section':
                     $opt['section'] = ($value <= SUBJ_IDX_SECTION_MAX) ? $value : 0;
+                    break;
+                case 'label':
+                    $opt['label'] = $value;
                     break;
                 default:
             }
@@ -231,8 +235,12 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         $outer_border = ($opt['border'] == 'outside' || $opt['border'] == 'both') ? 'border' : '';
         $inner_border = ($opt['border'] == 'inside' || $opt['border'] == 'both') ? 'inner-border' : '';
 
-// fixed point to jump back to at top of the table
+        // fixed point to jump back to at top of the table
         $top_id = 'top-' . mt_rand();
+
+        if ($opt['label'] != '') {
+            $label = '<h1 class="title">' . $opt['label'] . '</h1>' . DOKU_LF;
+        }
 
         // optional columns width adjustments
         $cols = $opt['cols'];
@@ -243,6 +251,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         }
 
         $render = '<div class="subjectindex ' . $outer_border . '" id="' . $top_id . '">' . DOKU_LF;
+        $render .= $label;
         $render .= '<div class="inner ' . $inner_border . '" style="' . $col_style . '">';
 
         foreach ($lines as $line) {

@@ -1,10 +1,10 @@
 ge gen
-ex
+ex exod
 le lev
 nu num
-de
-jos
-jg
+de deut
+jos josh
+jg judg
 ru
 1sa 1sam
 2sa 2sam
@@ -12,12 +12,12 @@ ru
 2ki 1kg
 1ch 1chr
 2ch 2chr
-ezr 
+ezr
 ne nem
 es est
 job
 ps psa
-pr pro
+pr pro prov
 ec ecc eccl
 ca sos sng
 isa
@@ -47,20 +47,20 @@ ro rom
 2co 2cor
 ga gal
 eph
-php 
+php
 col
 1th
 2th
 1ti 1tim
 2ti 2tim
-tit
+ti tit
 phm
 heb
 jas
 1pe 1pet
 2pe 2pet
-1jo
-2jo
-3jo
-jude
+1jo 1joh
+2jo 1joh
+3jo 1joh
+jud jude
 re rev
