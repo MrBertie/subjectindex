@@ -19,30 +19,30 @@ require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
 
 class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
-	function getType() {
-		return 'substition';
-	}
+    function getType() {
+        return 'substition';
+    }
 
 
-	function getPType() {
-		return 'block';
-	}
+    function getPType() {
+        return 'block';
+    }
 
 
-	function getSort() {
-		return 98;
-	}
+    function getSort() {
+        return 98;
+    }
 
 
-	function connectTo($mode) {
-		$this->Lexer->addSpecialPattern('\{\{subjectindex>.*?\}\}', $mode, 'plugin_subjectindex_index');
-	}
+    function connectTo($mode) {
+        $this->Lexer->addSpecialPattern('\{\{subjectindex>.*?\}\}', $mode, 'plugin_subjectindex_index');
+    }
 
 
-	function handle($match, $state, $pos, &$handler) {
+    function handle($match, $state, $pos, &$handler) {
         global $ID;
 
-		$match = substr($match, 15, -2); // strip "{{subjectindex>...}}" markup
+        $match = substr($match, 15, -2); // strip "{{subjectindex>...}}" markup
 
         $opt = array();
 
@@ -58,7 +58,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         $opt['showorder']   = false;     // display any bullet numbers used for ordering
         $opt['label']       = '';
 
-		$args = explode(';', $match);
+        $args = explode(';', $match);
         foreach ($args as $arg) {
             list($key, $value) = explode('=', $arg);
             $key = strtolower($key);
@@ -104,8 +104,8 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         if ($opt['default'] === true) {
             SubjectIndex::set_target_page($ID, $opt['section']);
         }
-		return $opt;
-	}
+        return $opt;
+    }
 
 
     function render($mode, &$renderer, $opt) {
@@ -323,9 +323,9 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             $name = '';
         }
 
-        // show the "abstract" as a tooltip
         $link = html_wikilink($id, $name);
         $link = $this->_add_page_anchor($link, $anchor);
+        // show the "abstract" as a tooltip
         if ($abstract) {
             $link = $this->_add_tooltip($link, $id);
         }
@@ -361,7 +361,8 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
     private function _get_abstract($id) {
         $meta = p_get_metadata($id, 'description abstract', true);
-        return htmlspecialchars($meta, ENT_IGNORE, 'UTF-8');
+        $meta = ( ! empty($meta)) ? htmlspecialchars($meta, ENT_NOQUOTES, 'UTF-8') : '';
+        return $meta;
     }
 
 
