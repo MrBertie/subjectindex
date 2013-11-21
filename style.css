@@ -5,7 +5,6 @@ div.dokuwiki a.bad-entry {
     background: transparent url(images/star-grey.png) 2px 1px no-repeat;
     background-size: 10px 10px;
     background-position: right 15%;
-    color: #227BBA;
     color: #586e75;
     display: inline;
     font-size: 95%;
@@ -24,6 +23,20 @@ div.dokuwiki a.entry:hover {
     text-shadow: 0 0 2px #D2A354;
 }
 
+.hidden {
+    visibility: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.no-text {
+    padding: 1px 9px 3px 3px !important;
+    margin-right: 3px !important;
+}
+
+.no-star {
+    background: none !important;
+    padding-right: 3px !important;
+}
 
 /* Main subject index lists */
 
@@ -37,7 +50,7 @@ div.dokuwiki .subjectindex {
     font-size: 80%;
     margin: 0;
     overflow: hidden;
-    padding: 4px;
+    padding: 4px 4px 6px;
     position: relative;
     text-align: left;
 }
@@ -62,15 +75,7 @@ div.dokuwiki .subjectindex .inner-border {
     -moz-column-rule: 1px solid #D7D5D4;
     -webkit-column-rule: 1px solid #D7D5D4;
 }
-.hidden {
-    visibility: hidden;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-.no-text {
-    padding: 1px 9px 3px 3px !important;
-    margin-right: 3px !important;
-}
+
 
 div.dokuwiki .subjectindex h1,
 div.dokuwiki .subjectindex h2,
@@ -156,4 +161,18 @@ div.dokuwiki .subjectindex a.top {
     font-style:italic;
     position:absolute;
     right:0.5em;
+}
+
+div.dokuwiki .subjectindex .count,
+div.dokuwiki .subjectindex .jump {
+    bottom:0.4em;
+    color:#A0A0A0;
+    font-style:italic;
+    position:absolute;
+}
+div.dokuwiki .subjectindex .jump {
+    right: 0.5em;
+}
+div.dokuwiki .subjectindex .count {
+    right: 4.5em;
 }

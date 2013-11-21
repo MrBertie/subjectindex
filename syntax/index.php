@@ -1,4 +1,6 @@
 <?php
+
+
 /**
  * Part of Subject Index plugin:
  *
@@ -11,9 +13,9 @@ if(!defined('DOKU_INC')) die();
 
 if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
+if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
-require_once(DOKU_PLUGIN.'syntax.php');
+require_once(DOKU_PLUGIN . 'syntax.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
 
 
@@ -35,7 +37,8 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
 
     function connectTo($mode) {
-        $this->Lexer->addSpecialPattern('\{\{subjectindex>.*?\}\}', $mode, 'plugin_subjectindex_index');
+        // allow for multi-line syntax (clearer when writing many options)
+        $this->Lexer->addSpecialPattern('\{\{subjectindex>(?m).*?(?-m)\}\}', $mode, 'plugin_subjectindex_index');
     }
 
 
@@ -56,9 +59,14 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         $opt['title']       = false;     // use title (first heading) instead of page name
         $opt['section']     = 0;         // which section to use and display (0-9)...hopefully 10 is enough
         $opt['showorder']   = false;     // display any bullet numbers used for ordering
-        $opt['label']       = '';
+        $opt['label']       = '';        // table header label at top
+        $opt['regex']       = null;      // a regex for filtering the index list
+        $opt['hidejump']    = false;     // hide the 'jump to top' link
 
+        // remove any trailing spaces caused by multi-line syntax
         $args = explode(';', $match);
+        $args = array_map('trim', $args);
+
         foreach ($args as $arg) {
             list($key, $value) = explode('=', $arg);
             $key = strtolower($key);
@@ -68,6 +76,8 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                 case 'hideatoz':
                 case 'proper':
                 case 'showorder':
+                case 'showcount':
+                case 'hidejump':
                 case 'title':
                     $opt[strtolower($key)] = true;
                     break;
@@ -92,17 +102,18 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     $opt['cols'] = $value;
                     break;
                 case 'section':
-                    $opt['section'] = ($value <= SUBJ_IDX_SECTION_MAX) ? $value : 0;
+                    $opt['section'] = ($value < 0) ? 0 : $value;
                     break;
                 case 'label':
-                    $opt['label'] = $value;
+                case 'regex':
+                    $opt[$key] = $value;
                     break;
                 default:
             }
         }
         // update the list of default target pages for entry links
         if ($opt['default'] === true) {
-            SubjectIndex::set_target_page($ID, $opt['section']);
+            SI_Utils::set_target_page($ID, $opt['section']);
         }
         return $opt;
     }
@@ -111,62 +122,62 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
     function render($mode, &$renderer, $opt) {
         if ($mode == 'xhtml') {
             $renderer->info['cache'] = false;
-            $subject_idx = file(SubjectIndex::get_index($this->getConf('subjectindex_data_dir')));
-            if (empty($subject_idx)) {
+
+            require_once (DOKU_INC . 'inc/indexer.php');
+            $all_pages = idx_getIndex('page', '');
+
+            $all_entries = SI_Utils::get_index();
+            if ($all_entries->is_empty()) {
                 $renderer->doc .= $this->getLang('empty_index');
                 return false;
             }
-            require_once (DOKU_INC . 'inc/indexer.php');
-            $page_idx = idx_getIndex('page', '');
 
-            $lines = $this->_create_index($subject_idx, $page_idx, $opt['section'], $opt['hideatoz'], $opt['proper']);
-            $renderer->doc .= $this->_render_index($lines, $opt);
+            // grab items for chosen index section only
+            $section_entries = $all_entries->filtered($opt['section'], $opt['regex']);
+            $count = count($section_entries->paths);
+            $lines = $this->_create_index($section_entries, $all_pages, $opt['hideatoz'], $opt['proper']);
+            $renderer->doc .= $this->_render_index($lines, $opt, $count);
+            return true;
         } else {
             return false;
         }
     }
 
 
-    private function _create_index($subject_idx, $page_idx, $section, $hideAtoZ, $proper) {
+    // first build a list of valid subject entries to be rendered
+    private function _create_index(SI_Index $section_entries, $all_pages, $hideAtoZ, $proper) {
 
         $lines = array();
         $links = array();
+        $prev_path = '';
 
-        // grab only items for chosen index section
-        $subject_idx = preg_grep('/^' . $section . '.+/', $subject_idx);
-
-        // first build a list of valid subject entries to be rendered, plus their heights
-        list($next_entry, $next_pid) = $this->_split_entry(current($subject_idx));
-        $prev_entry = '';
+        list($next_entry, $next_pid) = $section_entries->current();
 
         do {
+
             $entry = $next_entry;
             $pid = $next_pid;
 
             // cache the next entry for comparison purposes later
-            $next = next($subject_idx);
-            if ($next !== false) {
-                list($next_entry, $next_pid) = $this->_split_entry($next);
-            } else {
-                $next_entry = '';
-                $next_pid = '';
-            }
+            list($next_entry, $next_pid) = $section_entries->next();
 
-            $page = rtrim($page_idx[intval($pid)], "\n\r");
+            // remove any trailing whitespace which could falsify the later comparison
+            $page = rtrim($all_pages[$pid], "\n\r");
 
             // skip to next page if it is not valid: exists, accessible, permitted
-            if ( ! SubjectIndex::valid_page($page)) {
+            if ( ! SI_Utils::is_valid_page($page)) {
                 continue;
             }
 
-            // note: all comparisons are caseless (this is an A-Z index after all, humans don't distinguish when searching)
-            // Check for this BEFORE  adding the A-Z headings below!
+            // note: all comparisons are case-less
+            // (this is an A-Z index after all humans don't distinguish between case when searching)
+            // Need to do this check BEFORE adding the A-Z headings below, because $entry is modified
             $next_differs = strcasecmp($entry, $next_entry) !== 0;
 
             // Create the A-Z heading
             if ( ! $hideAtoZ) {
                 $matches = array();
-                $matched = preg_match('/(^\d+\.)?(.).+/', $entry, $matches);    // check for ordered entries 1
+                $matched = preg_match('/(^\d+\.)?(.).+/', $entry, $matches);    // check for ordered entries 1st
                 if ($matched > 0) {
                     $entry = $matches[1] . strtoupper($matches[2]) . '/' . $entry;
                 } else {
@@ -174,61 +185,58 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                 }
             }
 
-            $cur_level = strtok($entry, '/');
-            $cur_entry = '';
-            $hlevel = 1;    // html heading number 1-6
+            $cur_node = strtok($entry, '/');
+            $cur_path = '';
+            $heading = 1;    // html heading number 1-6
 
             do {
-                $next_level = strtok('/');
-                $cur_entry .= (empty($cur_entry)) ? $cur_level : '/' . $cur_level;  // current heading state
-
                 $is_heading = $is_link = false;
+
+                // build headers by adding each node
+                $cur_path .= (empty($cur_path)) ? $cur_node : '/' . $cur_node;
+
                 // we can add the page link(s) only if this is the final level;
                 // links take priority over headings!
-                if ($next_level === false) {
+                $next_node = strtok('/');
+                if ($next_node === false) {
                     $links[] = $page;
                     $is_link = true;
-                // we only make headings if they are completetly different from the previous
-                } elseif (strpos($prev_entry, $cur_entry) !== 0) {
+                // we only make headings if they are completely different from the previous
+                } elseif (strpos($prev_path, $cur_path) !== 0) {
                     $is_heading = true;
                 }
 
                 //  the next_differs check ensures that links will be grouped
                 if (($is_link && $next_differs) || $is_heading) {
                     if ($proper) {
-                        $cur_level = ucwords($cur_level);
+                        $cur_node = ucwords($cur_node);
                     }
                     if ($is_link) {
-                        $anchor = SubjectIndex::clean_id($entry);
-                        $lines[] = array($hlevel, $cur_level, $links, $anchor);
+                        $anchor = SI_Utils::valid_id($entry);
+                        $lines[] = array($heading, $cur_node, $links, $anchor);
                         $links = array();
                     } else {
-                        $lines[] = array($hlevel, $cur_level, '' ,'');
+                        $lines[] = array($heading, $cur_node, '' ,'');
                     }
                 }
-                $hlevel = ($hlevel > 5) ? 6 : $hlevel + 1;  // forgive the magic no's = html h1 to h6 is fixed anyway
-                $cur_level = $next_level;
-            } while ($next_level !== false);
+                // forgive the magic no's = html h1 to h6 is fixed anyway
+                $heading = ($heading > 5) ? 6 : $heading + 1;
+                $cur_node = $next_node;
 
-            $prev_entry = $entry;
-        } while ($next !== false);
+            } while ($next_node !== false);
+
+            $prev_path = $entry;
+        } while ($section_entries->valid());
 
         return $lines;
     }
 
 
-    private function _split_entry($entry) {
-        $_ = null;
-        list($text, $pid) = explode('|', $entry);
-        // remove the index section number
-        list($_, $text) = explode('/', $text, 2);
-        return array($text, $pid);
-    }
-
-
-    private function _render_index($lines, $opt){
-        $prev_was_link = true;
+    private function _render_index($lines, $opt, $count){
         $links = '';
+        $label = '';
+        $show_count = '';
+        $show_jump = '';
 
         // now render the subject index table
 
@@ -250,24 +258,28 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             $col_style = 'column-width:' . $cols . '; -moz-column-width:' . $cols . '; -webkit-column-width:' . $cols . ';';
         }
 
-        $render = '<div class="subjectindex ' . $outer_border . '" id="' . $top_id . '">' . DOKU_LF;
-        $render .= $label;
-        $render .= '<div class="inner ' . $inner_border . '" style="' . $col_style . '">';
+        if ($opt['showcount'] === true) {
+            $show_count = '<div class="count">' . $count . ' ∞</div>' . DOKU_LF;
+        }
+        if ($opt['hidejump'] === false) {
+            $show_jump = '<a class="top" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>' . DOKU_LF;
+        }
 
+        $subjectindex = '';
         foreach ($lines as $line) {
 
             // grab each entry line
-            list($lvl, $cur_level, $pages, $anchor) = $line;
+            list($heading, $cur_node, $pages, $anchor) = $line;
 
             // remove the ordering number from the entry if requested
             if ( ! $opt['showorder']) {
-                $matched = preg_match('/^\d+\.(.+)/', $cur_level, $matches);
+                $matched = preg_match('/^\d+\.(.+)/', $cur_node, $matches);
                 if ($matched > 0) {
-                    $cur_level = $matches[1];
+                    $cur_node = $matches[1];
                 }
             }
-            $indent_style = 'margin-left:' . ($lvl - 1) * 10 . 'px';
-            $entry = '<h' . $lvl . ' style="' . $indent_style . '"';
+            $indent_style = 'margin-left:' . ($heading - 1) * 10 . 'px';
+            $entry = '<h' . $heading . ' style="' . $indent_style . '"';
 
             // render page links
             if ( ! empty($pages)) {
@@ -284,30 +296,39 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                     $freq = '<span class="frequency">' . count($pages) . '</span>';
                 }
                 $anchor = ' id="' . $anchor . '"';
-                $entry .= $anchor . '>' . $cur_level . $freq . '<span class="links">' . $links . '</span></h' . $lvl . '>';
+                $entry .= $anchor . '>' . $cur_node . $freq . '<span class="links">' . $links . '</span></h' . $heading . '>';
 
-                $prev_was_link = true;
                 $links = '';
 
             // render headings
             } else {
-                $entry .= '>' . $cur_level . '</h' . $lvl . '>';
-                $prev_was_link = false;
+                $entry .= '>' . $cur_node . '</h' . $heading . '>';
             }
-            $render .= $entry . DOKU_LF;
+            $subjectindex .= $entry . DOKU_LF;
         }
-        $render .= '<a class="top" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>';
+
+        // actual rendering to wiki page
+        $render = '<div class="subjectindex ' . $outer_border . '" id="' . $top_id . '">' . DOKU_LF;
+        $render .= $show_count . $show_jump . $label . DOKU_LF;;
+        $render .= '<div class="inner ' . $inner_border . '" style="' . $col_style . '">' . DOKU_LF;;
+        $render .= $subjectindex;
+        $render .= '<a class="jump" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>' . DOKU_LF;;
         $render .= '</div></div>' . DOKU_LF;
         return $render;
+
+
     }
 
 
     /**
      * Renders a complete page link, plus tooltip, abstract, casing, etc...
+     *
      * @param string $id
-     * @param bool  $proper
-     * @param bool  $title
+     * @param bool $proper
+     * @param bool $title
      * @param mixed $abstract
+     * @param string $anchor
+     * @return string
      */
     private function _render_wikilink($id, $proper, $title, $abstract, $anchor) {
 
@@ -343,11 +364,11 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
 
     /**
-     * swap normal link title (popup) for a more useful preview
+     * Swap normal link title (popup) for a more useful preview
      *
+     * @param string $link  display name
      * @param string $id    page id
-     * @param string $name  display name
-     * @return complete href link
+     * @return string
      */
     private function _add_tooltip($link, $id) {
         $tooltip = $this->_get_abstract($id);
@@ -360,7 +381,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
 
     private function _get_abstract($id) {
-        $meta = p_get_metadata($id, 'description abstract', true);
+        $meta = \p_get_metadata($id, 'description abstract', true);
         $meta = ( ! empty($meta)) ? htmlspecialchars($meta, ENT_NOQUOTES, 'UTF-8') : '';
         return $meta;
     }

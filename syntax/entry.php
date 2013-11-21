@@ -1,4 +1,6 @@
 <?php
+
+
 /**
  * Subject Index plugin : entry syntax
  * indexes any subject index entries on the page (to data/index/subject.idx by default)
@@ -18,15 +20,17 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
+
+
 require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
 require_once(DOKU_PLUGIN . 'subjectindex/inc/matcher.php');
 
 
+
 class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
-    private $matcher = MatchEntry;
 
     function __construct() {
-        $this->matcher = new MatchEntry();
+        $this->matcher = new SI_MatchEntry();
     }
 
     function getType() {
@@ -41,49 +45,42 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 		return 'normal';
 	}
 
+
 	function connectTo($mode) {
-        if ( ! in_array($mode, array('preformatted', 'code', 'file', 'php', 'html'))) {
+        // avoid problems with code; {} show up a lot in php and js code!
+        if ( ! in_array($mode, array('unformatted', 'preformatted', 'code', 'file', 'php', 'html'))) {
             foreach ($this->matcher as $matcher) {
                 $this->Lexer->addSpecialPattern($matcher->regex, $mode, 'plugin_subjectindex_entry');
             }
         }
 	}
 
+
 	function handle($match, $state, $pos, &$handler) {
 
         if ($this->matcher->match($match) === true) {
-            $entry = $this->matcher->first['entry'];
-            $display = $this->matcher->first['display'];
-            $section = $this->matcher->first['section'];
-            $type = $this->matcher->first['type'];
-
-            require_once(DOKU_PLUGIN . 'subjectindex/inc/common.php');
-            $link_id = SubjectIndex::clean_id($entry);
-
-            // remove any ordered list numbers (used for manual sorting)
-            $entry = $this->remove_ord($entry);
-            $sep = $this->getConf('subjectindex_display_sep');
-
-            $hide = false;
-            if ($display == '-') {
-                // invisible entry, do not display at all
-                $display = '';
-                $hide = true;
-            } elseif (empty($display)) {
-                // default is full text of entry
-                $display = str_replace('/', $sep, $entry);
-            }
-            $entry = str_replace('/', $sep, $entry);
-            $target_page = SubjectIndex::get_target_page($section);
-
-            return array($entry, $display, $link_id, $target_page, $hide, $type);
-
+            $item          = $this->matcher->first;
+            $item['entry'] = $this->_remove_ord($item['entry']); // remove any ordered list numbers (used for manual sorting)
+            $link_id       = SI_Utils::valid_id($item['entry']);
+            $target_page   = SI_Utils::get_target_page($item['section']);
+            $sep           = $this->getConf('subjectindex_display_sep');
+            $path          = str_replace('/', $sep, $item['entry']);
+            return array($item, $path, $link_id, $target_page);
         } else {
             // It wasn't a recognised item so just return the original match for display
             return $match;
         }
 	}
 
+
+    private function _remove_ord($text) {
+        $text = preg_replace('`^\d+\.`', '', $text);
+        $text = preg_replace('`\/\d+\.`', '/', $text);
+        return $text;
+    }
+
+
+    // *************************************
 
 	function render($mode, &$renderer, $data) {
 
@@ -92,33 +89,41 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
             if ( ! is_array($data)) {
                 $renderer->doc .= $data;
             } else {
-                list($entry, $display, $link_id, $target_page, $hide, $type) = $data;
-                if ($display == '*') {
-                    $display = '';
-                    $hidden = ' no-text';
-                } elseif ($hide) {
-                    $hidden = ' hidden';
+                list($item, $path, $link_id, $target_page) = $data;
+                $star     = $item['star'];
+                $star_css = ($star) ? '' : ' no-star';
+                $display  = $item['display'];
+                if ($display == '-') {
+                    // hidden text
+                    $display    = '';
+                    $hidden_css = ($star === false) ? ' hidden' : ' no text';
                 } else {
-                    $hidden = '';
+                    // visible text
+                    if (empty($display)) $display = $path;
+                    $display    = $this->_html_encode($display);
+                    $hidden_css = '';
                 }
-                $entry = $this->getLang($type . '_prefix') . $entry;
-                $display = $this->html_encode($display);
-
+                $type = "\n(" . $item['section'] . '-' . $this->getLang($item['type'] . '_type') . ')';
                 if (empty($target_page)) {
                     $target_page = '';
-                    $title = $this->getLang('no_default_target');
-                    $class = 'bad-entry';
+                    $title       = $this->getLang('no_default_target') . $type;
+                    $class       = 'bad-entry';
                 } else {
                     $target_page = wl($target_page) . '#' . $link_id;
-                    $title = $this->html_encode($entry);
+                    if (isset($item['title'])) {
+                        $title = $this->_html_encode($item['title']);
+                    } else {
+                        $title = $this->_html_encode($path . $type);
+                    }
                     $class = 'entry';
                 }
 
-                $renderer->doc .= '<a id="' . $link_id . '" class="' . $class . $hidden .
+                $renderer->doc .= '<a id="' . $link_id .
+                                  '" class="' . $class . $hidden_css . $star_css .
                                   '" title="' . $title .
                                   '" href="' . $target_page . '">' .
                                   $display .
-                                  '</a>' . DOKU_LF;
+                                  '</a>';
             }
 			return true;
 		}
@@ -126,18 +131,8 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	}
 
 
-    // *************************************
-
-
-    private function html_encode($text) {
+    private function _html_encode($text) {
         $text = htmlentities($text, ENT_QUOTES, 'UTF-8');
-        return $text;
-    }
-
-
-    private function remove_ord($text) {
-        $text = preg_replace('`^\d+\.`', '', $text);
-        $text = preg_replace('`\/\d+\.`', '/', $text);
         return $text;
     }
 }

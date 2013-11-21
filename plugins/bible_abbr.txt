@@ -1,0 +1,66 @@
+ge gen
+ex exod
+le lev
+nu num
+de deut
+jos josh
+jg judg
+ru
+1sa 1sam
+2sa 2sam
+1ki 1kg
+2ki 1kg
+1ch 1chr
+2ch 2chr
+ezr
+ne nem
+es est
+job
+ps psa
+pr pro prov
+ec ecc eccl
+ca sos sng song
+isa
+jer
+la lam
+eze
+da dan
+ho hos
+joe joel
+am amo amos
+ob oba
+jon
+mic
+na nah
+hab
+zep zeph
+hag
+zec zech
+mal
+mt mat matt
+mr mk mark
+lu luke
+joh john
+ac act
+ro rom
+1co 1cor
+2co 2cor
+ga gal
+eph
+php
+col
+1th
+2th
+1ti 1tim
+2ti 2tim
+ti tit
+phm
+heb
+jas
+1pe 1pet
+2pe 2pet
+1jo 1joh
+2jo 1joh
+3jo 1joh
+jud jude
+re rev
