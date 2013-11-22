@@ -13,11 +13,10 @@ class SI_EntryVerse extends SI_Entry {
 
     // first is for Dokuwiki syntax parser matching, second for internal lexing
     public $regex = '(?:[123]\h?)?(?:[A-Z][a-zA-Z]+|Song of Solomon)\.?\h?1?[0-9]?[0-9]:\d{1,3}(?:[,-]\h?\d{1,3})*';
-    private $_regex = '([123]\h?)?([A-Z][a-zA-Z]+|Song of Solomon)\.?\h?(1?[0-9]?[0-9]):(\d{1,3}([,-]\h?\d{1,3})*)';
+    private $_regex = '`([123]\h?)?([A-Z][a-zA-Z]+|Song of Solomon)\.?\h?(1?[0-9]?[0-9]):(\d{1,3}([,-]\h?\d{1,3})*)`';
 
 
     function __construct() {
-        $this->_regex = parent::add_ignore_syntax($this->_regex);
         // array of possible abbreviations (space separated)
         $this->abbrs = file(DOKU_PLUGIN . 'subjectindex/plugins/bible_abbr.txt', FILE_IGNORE_NEW_LINES | FILE_TEXT);
         // array of proper book names

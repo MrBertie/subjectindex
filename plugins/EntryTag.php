@@ -15,12 +15,8 @@ class SI_EntryTag extends SI_Entry {
 
     // first is for Dokuwiki syntax parser matching, second for internal lexing
     public $regex = '(?<=\s|^)\#[^\s]+';
-    private $_regex = '(?:\s|^)\#([^#*\s]+)(\*?)';
+    private $_regex = '`(?:\s|^)\#([^#*\s]+)(\*?)`';
 
-
-    function __construct() {
-        $this->_regex = parent::add_ignore_syntax($this->_regex);
-    }
 
     function match($text) {
         $this->items = array();

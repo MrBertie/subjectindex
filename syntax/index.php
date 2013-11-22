@@ -251,7 +251,11 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
         }
 
         // optional columns width adjustments
-        $cols = $opt['cols'];
+        if ($count > SUBJ_IDX_HONOUR_COLS) {
+            $cols = $opt['cols'];
+        } else {
+            $cols = 1;
+        }
         if (is_numeric($cols)) {
             $col_style = 'column-count:' . $cols . '; -moz-column-count:' . $cols . '; -webkit-column-count:' . $cols . ';';
         } else {

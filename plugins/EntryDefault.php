@@ -33,12 +33,10 @@ class SI_EntryDefault extends SI_Entry {
     // first is for Dokuwiki syntax parser matching, second for internal lexing
     public $regex = '\{\{entry>.+?\}\}';
     // this regex allows for both old and new syntax (nasty!)
-    private $_regex = '\{\{entry>(?:(\d+)[;\/])?([^|;}]+)(?:[;|](.*?)(\*?))?\}\}';
+    private $_regex = '`\{\{entry>(?:(\d+)[;\/])?([^|;}]+)(?:[;|](.*?)(\*?))?\}\}`';
 
     // [1] = section; [2] = entry; [3] = display; [4] = star
-    function __construct() {
-        $this->_regex = parent::add_ignore_syntax($this->_regex);
-    }
+
 
     function match($text) {
         $this->items = array();

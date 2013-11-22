@@ -1,7 +1,7 @@
 base    subjectindex
 author  Symon Bent
 email   hendrybadao@gmail.com
-date    2013-11-21
+date    2013-11-22
 name    Subjectindex Plugin
 desc    Hierarchical structured tagging: create A-Z subject index pages for your wiki, based on in-place entries|tags in pages.
 url     http://wiki.splitbrain.org/plugin:subjectindex

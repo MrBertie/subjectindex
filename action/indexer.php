@@ -32,19 +32,21 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         }
         if (empty($page)) return;   // get out if no such wiki-page
 
-        $all_pages = idx_getIndex('page', '');
+        $raw_page = rawWiki($page);
 
+        $all_pages = idx_getIndex('page', '');
         $indexer = new SI_Indexer();
 
         // first remove any entries that reference non-existant files (currently once a day!)
         $indexer->cleanup($all_pages);
 
         // now get all marked up entries for this wiki page
-        $raw_page = rawWiki($page);
         $matched_entries = array();
-        $matcher = new SI_MatchEntry();
-        if ($matcher->match($raw_page) === true) {
-            $matched_entries = $matcher->all;
+        if ( ! $this->_skip_index($raw_page)) {
+            $matcher = new SI_MatchEntry();
+            if ($matcher->match($raw_page) === true) {
+                $matched_entries = $matcher->all;
+            }
         }
 
         // get page id--this corresponds to line number in page.idx file
@@ -52,5 +54,11 @@ class action_plugin_subjectindex_indexer extends DokuWiki_Action_Plugin {
         $page_id = $doku_indexer->getPID($page);
 
         $indexer->update($page_id, $matched_entries)->save();
+    }
+
+
+    private function _skip_index($page) {
+        $skip_index = (preg_match('`~~NOSUBJECTINDEX~~`i', $page) == 1);
+        return $skip_index;
     }
 }

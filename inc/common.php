@@ -9,6 +9,7 @@ define('SUBJ_IDX_FILE', SUBJ_IDX_DIR . 'subjectindex.idx');
 define('SUBJ_IDX_PLUGINS', DOKU_PLUGIN . 'subjectindex/plugins/');
 define('SUBJ_IDX_DEFAULT_TARGETS', DOKU_PLUGIN . 'subjectindex/conf/default_targets');
 define('SUBJ_IDX_LAST_CLEANUP', DOKU_PLUGIN . 'subjectindex/conf/last_cleanup');
+define('SUBJ_IDX_HONOUR_COLS', 10);
 
 
 
@@ -103,9 +104,11 @@ class SI_Index implements Iterator {
         $fpaths = $this->paths;
         if ($section !== null && is_numeric($section)) {
             $fpaths = preg_grep('`^' . $section . '\/.*`', $fpaths);
-        } elseif ( ! empty($regex)) {
+        }
+        if ( ! empty($regex)) {
             $fpaths = preg_grep('`' . $regex . '`', $fpaths);
-        } elseif ($pid !== null) {
+        }
+        if ($pid !== null) {
             $fpaths = array_intersect_key($this->paths, preg_grep('/' . $pid . '/', $this->pids));
         }
         $fpids = array_intersect_key($this->pids, $fpaths);

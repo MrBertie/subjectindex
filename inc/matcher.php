@@ -70,8 +70,4 @@ class SI_Entry {
 
     function match() {
     }
-
-    function add_ignore_syntax($regex) {
-        return '`(?!=(\'\'|%%))' . $regex . '(?!(\'\'|%%))`';
-    }
 }
