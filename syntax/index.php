@@ -155,7 +155,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
         do {
 
-            $entry = $next_entry;
+            $entry = $anchor = $next_entry;
             $pid = $next_pid;
 
             // cache the next entry for comparison purposes later
@@ -212,7 +212,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
                         $cur_node = ucwords($cur_node);
                     }
                     if ($is_link) {
-                        $anchor = SI_Utils::valid_id($entry);
+                        $anchor = SI_Utils::valid_id($anchor);
                         $lines[] = array($heading, $cur_node, $links, $anchor);
                         $links = array();
                     } else {
@@ -266,7 +266,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
             $show_count = '<div class="count">' . $count . ' ∞</div>' . DOKU_LF;
         }
         if ($opt['hidejump'] === false) {
-            $show_jump = '<a class="top" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>' . DOKU_LF;
+            $show_jump = '<a class="jump" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>' . DOKU_LF;
         }
 
         $subjectindex = '';
@@ -313,14 +313,12 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
 
         // actual rendering to wiki page
         $render = '<div class="subjectindex ' . $outer_border . '" id="' . $top_id . '">' . DOKU_LF;
-        $render .= $show_count . $show_jump . $label . DOKU_LF;;
+        $render .= $label . DOKU_LF;;
         $render .= '<div class="inner ' . $inner_border . '" style="' . $col_style . '">' . DOKU_LF;;
         $render .= $subjectindex;
-        $render .= '<a class="jump" href="#' . $top_id . '">' . $this->getLang('link_to_top') . '</a>' . DOKU_LF;;
+        $render .= $show_count . $show_jump;
         $render .= '</div></div>' . DOKU_LF;
         return $render;
-
-
     }
 
 
