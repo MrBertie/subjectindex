@@ -56,7 +56,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 	}
 
 
-	function handle($match, $state, $pos, &$handler) {
+	function handle($match, $state, $pos, Doku_Handler $handler) {
 
         if ($this->matcher->match($match) === true) {
             $item          = $this->matcher->first;
@@ -82,7 +82,7 @@ class syntax_plugin_subjectindex_entry extends DokuWiki_Syntax_Plugin {
 
     // *************************************
 
-	function render($mode, &$renderer, $data) {
+	function render($mode, Doku_Renderer $renderer, $data) {
 
         if ($mode == 'xhtml') {
             // just re-display a failed match

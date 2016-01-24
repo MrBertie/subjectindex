@@ -42,13 +42,13 @@ class syntax_plugin_subjectindex_ignore extends DokuWiki_Syntax_Plugin {
 	}
 
 
-	function handle($match, $state, $pos, &$handler) {
+	function handle($match, $state, $pos, Doku_Handler $handler) {
        // For use by indexer only in raw wiki text, not for display
         return $match;
 	}
 
 
-	function render($mode, &$renderer, $data) {
+	function render($mode, Doku_Renderer $renderer, $data) {
         if ($mode == 'xhtml') {
             $renderer->doc .= '';
         } else {

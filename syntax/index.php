@@ -42,7 +42,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
     }
 
 
-    function handle($match, $state, $pos, &$handler) {
+    function handle($match, $state, $pos, Doku_Handler $handler) {
         global $ID;
 
         $match = substr($match, 15, -2); // strip "{{subjectindex>...}}" markup
@@ -119,7 +119,7 @@ class syntax_plugin_subjectindex_index extends DokuWiki_Syntax_Plugin {
     }
 
 
-    function render($mode, &$renderer, $opt) {
+    function render($mode, Doku_Renderer $renderer, $opt) {
         if ($mode == 'xhtml') {
             $renderer->info['cache'] = false;
 
