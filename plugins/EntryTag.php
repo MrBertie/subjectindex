@@ -14,8 +14,8 @@ class SI_EntryTag extends SI_Entry {
     public $section = 1;
 
     // first is for Dokuwiki syntax parser matching, second for internal lexing
-    public $regex = '(?<=\s|^)\#[^\s]+';
-    private $_regex = '`(?:\s|^)\#([^#*\s]+)(\*?)`';
+    public $regex = '(?<=[\s|]|^)\#[^\s|]+';
+    private $_regex = '`(?:[\s|]|^)\#([^#*\s|]+)(\*?)`';
 
 
     function match($text) {
@@ -27,7 +27,7 @@ class SI_EntryTag extends SI_Entry {
                 $item = &$this->items[];
                 $tag = $match[1];
                 $item['entry'] = $tag;
-                $item['display'] = str_replace('_', ' ', $tag);  // swap '_' for spaces for display
+                $item['display'] = '#' . str_replace('_', ' ', $tag);  // swap '_' for spaces for display
                 $item['section'] = $this->section;
                 $item['type'] = $this->type;
                 $item['star'] = $match[2] == '*' ? true : false;
