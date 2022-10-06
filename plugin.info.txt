@@ -1,6 +1,6 @@
 base    subjectindex
 author  Symon Bent, Michael Sy.
-email   hendrybadao@gmail.com
+email   
 date    2022-10-06
 name    Subjectindex Plugin
 desc    Hierarchical structured tagging: create A-Z subject index pages for your wiki, based on in-place entries|tags in pages.
