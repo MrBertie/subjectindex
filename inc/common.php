@@ -109,7 +109,7 @@ class SI_Index implements Iterator {
             $fpaths = preg_grep('`' . $regex . '`', $fpaths);
         }
         if ($pid !== null) {
-            $fpaths = array_intersect_key($this->paths, preg_grep('/' . $pid . '/', $this->pids));
+            $fpaths = array_intersect_key($this->paths, preg_grep('/^' . $pid . '$/', $this->pids));
         }
         $fpids = array_intersect_key($this->pids, $fpaths);
         $index = new SI_Index($fpaths, $fpids);
